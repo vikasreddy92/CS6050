@@ -11,8 +11,18 @@ public class Circle {
 	}
 
 	@Override
-	public String toString() {
-		return "Circle" + " " + center.toString() + " " + Integer.toString(radius);
+	public int hashCode() {
+		return this.center.hashCode() + this.radius;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		Circle c = (Circle) o;
+		return (this.center.equals(c.center) && this.radius == c.radius);
+	}
+
+	@Override
+	public String toString() {
+		return center.toString() + " " + Integer.toString(radius);
+	}
 }

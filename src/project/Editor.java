@@ -3,13 +3,10 @@ package project;
 public class Editor implements Runnable {
 	Window window;
 	Data data;
-	Shape circles;
 
 	Editor() {
 		window = new Window(this);
 		data = new Data(this);
-		circles = new Shape(this);
-		
 	}
 
 	void refresh() {

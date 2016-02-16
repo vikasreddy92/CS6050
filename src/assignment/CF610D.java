@@ -4,52 +4,28 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.StringTokenizer;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CF610D {
-	static Map<Integer, Point> mPoints = new HashMap<Integer, Point>();
-	static int mapCount = 0;
-
-	static class Segment {
-		int x1, y1, x2, y2;
-
-		Segment(String s) {
-			StringTokenizer st = new StringTokenizer(s);
-			this.x1 = Integer.parseInt(st.nextToken());
-			this.y1 = Integer.parseInt(st.nextToken());
-			this.x2 = Integer.parseInt(st.nextToken());
-			this.y2 = Integer.parseInt(st.nextToken());
-		}
-	}
-
-	static class Point {
-		int x, y;
-
-		Point(int x, int y) {
-			this.x = x;
-			this.y = y;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			Point p = (Point) o;
-			return (this.x == p.x && this.y == p.y);
-		}
-	}
-
+	static Set<String> points = new HashSet<String>();
+	static int x1,y1,x2,y2;
+	
 	public static void main(String[] args) {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		PrintWriter writer = new PrintWriter(System.out);
-
+		String[] input;
 		try {
 			int n = Integer.parseInt(reader.readLine());
 			for (int i = 0; i < n; i++) {
-				Segment seg = new Segment(reader.readLine());
-				getSquares(seg);
+				input = reader.readLine().split(" ");
+				x1 = Integer.parseInt(input[0]);
+				y1 = Integer.parseInt(input[1]);
+				x2 = Integer.parseInt(input[2]);
+				y2 = Integer.parseInt(input[3]);
+				getSquares();
 			}
-			writer.println(mapCount);
+			writer.println(points.size());
 			reader.close();
 			writer.close();
 		} catch (NumberFormatException | IOException e) {
@@ -57,42 +33,31 @@ public class CF610D {
 		}
 	}
 
-	private static void getSquares(Segment seg) {
+	private static void getSquares() {
 		int start, end;
-		if (seg.x1 == seg.x2) {
-			if (seg.y1 < seg.y2) {
-				start = seg.y1;
-				end = seg.y2;
+		if (x1 == x2) {
+			if (y1 < y2) {
+				start = y1;
+				end = y2;
 			} else {
-				start = seg.y2;
-				end = seg.y1;
+				start = y2;
+				end = y1;
 			}
 			for (int i = start; i <= end; i++) {
-				Point p = new Point(seg.x1, i);
-				if (!mPoints.containsValue(p))
-				{
-					mPoints.put(mapCount, p);
-					mapCount++;
-				}
+					points.add(x1+" "+i);
 			}
 		}
-		if (seg.y1 == seg.y2) {
-			if (seg.x1 < seg.x2) {
-				start = seg.x1;
-				end = seg.x2;
+		else {
+			if (x1 < x2) {
+				start = x1;
+				end = x2;
 			} else {
-				start = seg.x2;
-				end = seg.x1;
+				start = x2;
+				end = x1;
 			}
 			for (int i = start; i <= end; i++) {
-				Point p = new Point(i, seg.y1);
-				if (!mPoints.containsValue(p))
-				{
-					mPoints.put(mapCount, p);
-					mapCount++;
-				}
+				points.add(i+" "+y1);
 			}
 		}
 	}
-
 }
