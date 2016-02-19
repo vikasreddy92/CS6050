@@ -18,8 +18,10 @@ public class TextArea extends JTextArea implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	Editor editor;
 	JPopupMenu popup = new JPopupMenu("Menu");
-	JMenuItem menuItem;
+	JMenuItem exportMenuItem;
+	JMenuItem importMenuItem;
 	static final String EXPORT = "Export to ps";
+	static final String IMPORT = "Import to Editor";
 
 	class PopUpTrigger extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {
@@ -32,9 +34,15 @@ public class TextArea extends JTextArea implements ActionListener {
 	public TextArea(Editor editor) {
 		super(0, 15);
 		this.editor = editor;
-		menuItem = new JMenuItem(EXPORT);
-		menuItem.addActionListener(this);
-		popup.add(menuItem);
+		
+		exportMenuItem = new JMenuItem(EXPORT);
+		importMenuItem = new JMenuItem(IMPORT);
+		
+		exportMenuItem.addActionListener(this);
+		importMenuItem.addActionListener(this);
+		popup.add(exportMenuItem);
+		popup.add(importMenuItem);
+		
 		addMouseListener(new PopUpTrigger());
 	}
 
@@ -46,12 +54,24 @@ public class TextArea extends JTextArea implements ActionListener {
 			fileChooser.setFileFilter(new FileNameExtensionFilter("Encapsulated PostScript File Format", "eps"));
 			int rVal = fileChooser.showSaveDialog(this);
 			if (rVal == JFileChooser.APPROVE_OPTION) {
-				String fileName = fileChooser.getSelectedFile().getAbsolutePath();
-				if (!fileName.endsWith(".eps"))
-					fileName = fileName + ".eps";
-				Export.export(this.getText(), fileName);
+				String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+				if (!filePath.endsWith(".eps"))
+					filePath = filePath + ".eps";
+				FileIO fio = new FileIO(editor);
+				fio.export(this.getText(), filePath);
 			} else if (rVal == JFileChooser.CANCEL_OPTION) {
-
+				//throw a alert?
+			}
+		} else if(action.equals(IMPORT)) {
+			JFileChooser fileChooser = new JFileChooser();
+			fileChooser.setFileFilter(new FileNameExtensionFilter("Encapsulated PostScript File Format", "eps"));
+			int rVal = fileChooser.showOpenDialog(this);
+			if(rVal == JFileChooser.APPROVE_OPTION) {
+				String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+				FileIO fio = new FileIO(editor);
+				System.out.println("Importing... " + filePath);
+				fio.importToEditor(filePath);
+				editor.refresh();
 			}
 		}
 	}

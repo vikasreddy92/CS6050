@@ -1,5 +1,6 @@
 package project;
 
+
 public class Editor implements Runnable {
 	Window window;
 	Data data;
@@ -10,8 +11,12 @@ public class Editor implements Runnable {
 	}
 
 	void refresh() {
+		window.board.validate();
 		window.board.repaint();
-		window.board.revalidate();
+		window.toolBox.validate();
+		window.toolBox.repaint();
+		window.box.validate();
+		window.box.repaint();
 		window.text.setText(data.toText());
 	}
 
@@ -21,6 +26,9 @@ public class Editor implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		javax.swing.SwingUtilities.invokeLater(new Editor());
+		Editor editor = new Editor();
+		editor.refresh();
+		editor.window.toolBox.lineBtn.doClick();
+		javax.swing.SwingUtilities.invokeLater(editor);
 	}
 }

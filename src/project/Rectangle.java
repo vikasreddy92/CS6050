@@ -4,11 +4,20 @@ public class Rectangle {
 	Vertex origin;
 	int width;
 	int height;
+	int thickness;
+
+	public Rectangle(Vertex origin, int width, int height, int thickness) {
+		this.origin = origin;
+		this.width = width;
+		this.height = height;
+		this.thickness = thickness;
+	}
 
 	public Rectangle(Vertex origin, int width, int height) {
 		this.origin = origin;
 		this.width = width;
 		this.height = height;
+		this.thickness = 1;
 	}
 
 	public Rectangle(int x, int y, int width, int height) {

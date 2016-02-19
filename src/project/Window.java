@@ -4,18 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.PopupMenu;
-
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 
 public class Window extends JFrame {
 
@@ -27,6 +22,7 @@ public class Window extends JFrame {
 	Board board;
 	TextArea text;
 	Box box;
+	ToolBox toolBox;
 	JLabel message;
 	
 	Window(Editor editor) {
@@ -34,26 +30,25 @@ public class Window extends JFrame {
 		this.editor = editor;
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-				| UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}
 		
-		Border empty = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-
+		Border emptyBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+		
 		board = new Board(editor);
 		board.setPreferredSize(new Dimension(800, 800));
+		board.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Tools"));
 		board.setOpaque(true);
 		board.setBackground(Color.WHITE);
 		
+		toolBox = new ToolBox(editor);
+		toolBox.setFloatable(false);
+		toolBox.setBorder(emptyBorder);
+		
 		box = new Box(editor);
-		box.setBorder(empty);
+		box.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Tools"));
 
 		text = new TextArea(editor);
 		text.setEditable(false);
-		text.setBorder(empty);
+		text.setBorder(emptyBorder);
 
 		JScrollPane scroll = new JScrollPane(text);
 
@@ -63,16 +58,18 @@ public class Window extends JFrame {
 		side.add(box, BorderLayout.PAGE_END);
 
 		message = new JLabel("Hello World");
-		message.setBorder(empty);
+		message.setBorder(emptyBorder);
 		message.setOpaque(true);
-		message.setBackground(Color.WHITE);
-		
+		message.setBackground(Color.LIGHT_GRAY);
 		
 		Container pane = getContentPane();
+
 		pane.setLayout(new BorderLayout());
+		pane.add(toolBox, BorderLayout.PAGE_START);
 		pane.add(board, BorderLayout.CENTER);
 		pane.add(side, BorderLayout.LINE_END);
 		pane.add(message, BorderLayout.PAGE_END);
+		
+		this.pack();
 	}
-
 }
