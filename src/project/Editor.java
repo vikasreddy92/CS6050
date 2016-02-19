@@ -1,5 +1,6 @@
 package project;
 
+import javax.swing.SwingUtilities;
 
 public class Editor implements Runnable {
 	Window window;
@@ -11,12 +12,19 @@ public class Editor implements Runnable {
 	}
 
 	void refresh() {
+		window.board.invalidate();
 		window.board.validate();
 		window.board.repaint();
+		
+		window.toolBox.invalidate();
 		window.toolBox.validate();
 		window.toolBox.repaint();
+		
+		window.box.invalidate();
 		window.box.validate();
 		window.box.repaint();
+		
+		SwingUtilities.updateComponentTreeUI(window);
 		window.text.setText(data.toText());
 	}
 
