@@ -9,6 +9,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
@@ -19,16 +21,22 @@ public class Window extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	Editor editor;
-	Board board;
-	TextArea text;
-	Box box;
-	ToolBox toolBox;
-	JLabel message;
+	public Board board;
+	public TextArea text;
+	public Box box;
+	public ToolBox toolBox;
+	public JLabel message;
 	
 	Window(Editor editor) {
 		super("Vector Graphics Editor");
 		this.editor = editor;
 
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		Border emptyBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);

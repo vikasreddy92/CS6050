@@ -1,5 +1,6 @@
 package project;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -18,14 +19,6 @@ class Board extends JPanel implements MouseInputListener {
 	Editor editor;
 	Circle movingCircle;
 	Rectangle movingRectangle;
-
-	public int getBrushSize() {
-		return brushSize;
-	}
-
-	public void setBrushSize(int brushSize) {
-		this.brushSize = brushSize;
-	}
 
 	Board(Editor editor) {
 		this.editor = editor;
@@ -65,13 +58,15 @@ class Board extends JPanel implements MouseInputListener {
 			}
 		}
 
+		Graphics2D g2d = (Graphics2D) g;
 		for (Rectangle r1 : editor.data.rectangles) {
+			g2d.setStroke(new BasicStroke(r1.thickness));
 			if (r1 != editor.data.tempRectangle) {
-				g.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
+				g2d.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
 			} else {
-				g.setColor(Color.RED);
-				g.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
-				g.setColor(Color.BLACK);
+				g2d.setColor(Color.RED);
+				g2d.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
+				g2d.setColor(Color.BLACK);
 			}
 		}
 
@@ -162,13 +157,13 @@ class Board extends JPanel implements MouseInputListener {
 		} else if (editor.window.box.mode.equals(editor.window.box.RC))
 			editor.data.removeCircle(x, y);
 		else if (editor.window.box.mode.equals(editor.window.box.AR)) {
-			sX = x;
-			sY = y;
+			currX = sX = x;
+			currY = sY = y;
 		} else if (editor.window.box.mode.equals(editor.window.box.MR)) {
 			movingRectangle = editor.data.moveRectangle(x, y);
 			if (movingRectangle != null) {
-				currX = x;
-				currY = y;
+				currX = movingRectangle.origin.x;
+				currY = movingRectangle.origin.y;
 			}
 		} else if (editor.window.box.mode.equals(editor.window.box.RR)) {
 			editor.data.removeRectangle(x, y);
@@ -192,15 +187,17 @@ class Board extends JPanel implements MouseInputListener {
 				editor.data.circles.remove(movingCircle);
 			}
 		} else if (editor.window.box.mode.equals(editor.window.box.AR)) {
-			editor.data.add(getReactangle(sX, sY, currX, currY));
+			editor.data.add(getReactangle(sX, sY, currX, currY, brushSize));
 		} else if (editor.window.box.mode.equals(editor.window.box.MR)) {
 			if (movingRectangle != null) {
-				editor.data.add(new Vertex(currX, currY), movingRectangle.width, movingRectangle.height);
+				editor.data.add(new Rectangle(new Vertex(currX, currY), movingRectangle.width, movingRectangle.height, brushSize));
 				editor.data.rectangles.remove(movingRectangle);
 			}
 		} else if (editor.window.box.mode.equals(editor.window.box.AL)) {
 			editor.data.add(new Vertex(sX, sY), new Vertex(currX, currY));
 		}
+		currX = sX = e.getX();
+		currY = sY = e.getY();
 		editor.refresh();
 	}
 	
@@ -211,20 +208,30 @@ class Board extends JPanel implements MouseInputListener {
 	}
 
 	public void drawRect(int sX2, int sY2, int currX2, int currY2, Graphics g) {
-		Rectangle rect = getReactangle(sX2, sY2, currX2, currY2);
-		g.drawRect(rect.origin.x, rect.origin.y, rect.width, rect.height);
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.setStroke(new BasicStroke(brushSize));
+		Rectangle rect = getReactangle(sX2, sY2, currX2, currY2, brushSize);
+		g2d.drawRect(rect.origin.x, rect.origin.y, rect.width, rect.height);
 	}
 	
-	public Rectangle getReactangle(int sX2, int sY2, int currX2, int currY2) {
+	public Rectangle getReactangle(int sX2, int sY2, int currX2, int currY2, int thickness) {
 		int width = -sX2 + currX2;
 		int height = -sY2 + currY2;
 		if (width < 0 && height > 0)
-			return new Rectangle(currX2, sY2, -width, height);
+			return new Rectangle(currX2, sY2, -width, height, brushSize);
 		else if (width > 0 && height < 0)
-			return new Rectangle(sX2, currY2, width, -height);
+			return new Rectangle(sX2, currY2, width, -height, brushSize);
 		else if (width < 0 && height < 0)
-			return new Rectangle(currX2, currY2, -width, -height);
+			return new Rectangle(currX2, currY2, -width, -height, brushSize);
 		else
-			return new Rectangle(sX2, sY2, width, height);
+			return new Rectangle(sX2, sY2, width, height, brushSize);
+	}
+	
+	public int getBrushSize() {
+		return brushSize;
+	}
+
+	public void setBrushSize(int brushSize) {
+		this.brushSize = brushSize;
 	}
 }

@@ -8,7 +8,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-class Box extends JPanel implements ActionListener {
+public class Box extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -33,7 +33,7 @@ class Box extends JPanel implements ActionListener {
 
 	Editor editor;
 
-	String mode = "";
+	public String mode = "";
 
 	Box(Editor editor) {
 		this.editor = editor;

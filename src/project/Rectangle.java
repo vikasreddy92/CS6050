@@ -26,6 +26,14 @@ public class Rectangle {
 		this.height = height;
 	}
 
+	public Rectangle(int x, int y, int width, int height, int thickness) {
+		this.origin = new Vertex(x, y);
+		this.width = width;
+		this.height = height;
+		this.thickness = thickness;
+	}
+
+	
 	@Override
 	public int hashCode() {
 		return this.origin.hashCode() + width + height;

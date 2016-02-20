@@ -12,9 +12,7 @@ import javax.swing.JTextArea;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class TextArea extends JTextArea implements ActionListener {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	Editor editor;
 	JPopupMenu popup = new JPopupMenu("Menu");
@@ -29,10 +27,15 @@ public class TextArea extends JTextArea implements ActionListener {
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		}
+		public void mouseClicked(MouseEvent e) {
+			if(e.isPopupTrigger()) {
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		}
 	}
 
 	public TextArea(Editor editor) {
-		super(0, 15);
+		super(0, 35);
 		this.editor = editor;
 		
 		exportMenuItem = new JMenuItem(EXPORT);
@@ -49,6 +52,7 @@ public class TextArea extends JTextArea implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String action = e.getActionCommand();
+		System.out.println("TextArea.java: " + action);
 		if (action.equals(EXPORT)) {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileFilter(new FileNameExtensionFilter("Encapsulated PostScript File Format", "eps"));

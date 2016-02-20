@@ -3,7 +3,7 @@ package project;
 import javax.swing.SwingUtilities;
 
 public class Editor implements Runnable {
-	Window window;
+	public Window window;
 	Data data;
 
 	Editor() {
