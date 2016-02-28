@@ -54,12 +54,12 @@ class Board extends JPanel implements MouseInputListener
 		if (editor.window.box.mode.equals(editor.window.box.AC))
 		{
 			int radius = Math.abs(currX - sX);
-			drawCircle(sX, sY, radius, brushColor, brushSize, g);
+			drawCircle(sX, sY, radius, brushColor, fillColor, brushSize, g);
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.MC))
 		{
 			if (dragging && movingCircle != null)
-				drawCircle(sX, sY, movingCircle.radius, movingCircle.brushColor, movingCircle.thickness, g);
+				drawCircle(sX, sY, movingCircle.radius, movingCircle.brushColor, movingCircle.fillColor, movingCircle.thickness, g);
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.AR))
 		{
@@ -308,6 +308,9 @@ class Board extends JPanel implements MouseInputListener
 			g2d.setStroke(new BasicStroke(c.thickness));
 			g2d.fillOval(x - r, y - r, r * 2, r * 2);
 			g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+			radius = radius - 1;// - c.thickness + 1;
+			g2d.setColor(c.fillColor);
+			g2d.fillOval(x - radius, y - radius, radius * 2, radius * 2);
 		}
 		else
 		{
@@ -315,17 +318,23 @@ class Board extends JPanel implements MouseInputListener
 			g2d.setStroke(new BasicStroke(c.thickness));
 			g2d.fillOval(x - r, y - r, r * 2, r * 2);
 			g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+			radius = radius  - 1;// - c.thickness + 1;
+			g2d.setColor(c.fillColor);
+			g2d.fillOval(x - radius, y - radius, radius * 2, radius * 2);
 		}
 	}
 
-	public void drawCircle(int x, int y, int radius, Color color, int brushSize, Graphics g)
+	public void drawCircle(int x, int y, int radius, Color brushColor, Color fillColor, int brushSize, Graphics g)
 	{
-		g.setColor(brushColor);
 		Graphics2D g2d = (Graphics2D) g;
 		int r = 5;
+		g2d.setColor(brushColor);
 		g2d.setStroke(new BasicStroke(brushSize));
 		g2d.fillOval(x - r, y - r, r * 2, r * 2);
 		g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+		g2d.setColor(fillColor);
+		radius = radius - 1;
+		g2d.fillOval(x - radius, y - radius, radius * 2, radius * 2);
 	}
 
 	public void drawRect(int sX2, int sY2, int currX2, int currY2, Graphics g)

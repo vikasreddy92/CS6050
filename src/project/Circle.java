@@ -34,7 +34,6 @@ public class Circle {
 		float[] brushColors = getComponents(brushColor);
 		float[] fillColors = getComponents(fillColor);
 		return brushColors[0] + " " + brushColors[1] + " " + brushColors[2] + " " + thickness + " " + center + " " + radius + " ";
-//		return fillColors[0] + " " + fillColors[1] + " " + fillColors[2] + " " + brushColors[0] + " " + brushColors[1] + " " + brushColors[2] + " " + thickness + " " + center + " " + radius + " ";
 	}
 	
 	private float[] getComponents(Color color) {

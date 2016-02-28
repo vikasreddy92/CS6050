@@ -36,6 +36,8 @@ public class FileIO
 
 	public void export(String text, String filePath)
 	{
+		setBoundingBox();
+		System.out.println("Bounding box: (" + xmin + ", " + ymin + "), (" + xmax + ", " + ymax + ")");
 		StringBuilder sb = new StringBuilder();
 		StringBuilder data = new StringBuilder();
 
@@ -49,15 +51,13 @@ public class FileIO
 				float rComp = Float.parseFloat(st.nextToken());
 				float gComp = Float.parseFloat(st.nextToken());
 				float bComp = Float.parseFloat(st.nextToken());
-
 				int thickness = Integer.parseInt(st.nextToken());
-
 				int x1 = Integer.parseInt(st.nextToken());
 				int y1 = Integer.parseInt(st.nextToken());
 				int x2 = Integer.parseInt(st.nextToken());
 				int y2 = Integer.parseInt(st.nextToken());
-				check(x1 + thickness, y1 + thickness);
-				check(x2 + thickness, y2 + thickness);
+				y1 = ymax - y1;
+				y2 = ymax - y2;
 				data.append(x1 + " " + y1 + " " + x2 + " " + y2 + " " + thickness + " " + rComp + " " + gComp + " "
 						+ bComp + " " + line + "\n");
 			}
@@ -66,31 +66,26 @@ public class FileIO
 				float rComp = Float.parseFloat(st.nextToken());
 				float gComp = Float.parseFloat(st.nextToken());
 				float bComp = Float.parseFloat(st.nextToken());
-
 				int thickness = Integer.parseInt(st.nextToken());
-
 				int x = Integer.parseInt(st.nextToken());
 				int y = Integer.parseInt(st.nextToken());
 				int radius = Integer.parseInt(st.nextToken());
-
-				check(x + radius + thickness, y + radius + thickness);
-				check(x - radius, y - radius);
+				y = ymax - y;
 				data.append(x + " " + y + " " + radius + " " + thickness + " " + rComp + " " + gComp + " " + bComp + " "
 						+ line + "\n");
 			}
 			else if (line.equals("rectangle"))
 			{
 				float rBrushComp = Float.parseFloat(st.nextToken()); // for
-																		// brushColor
 				float gBrushComp = Float.parseFloat(st.nextToken());
 				float bBrushComp = Float.parseFloat(st.nextToken());
 				float rFillComp = Float.parseFloat(st.nextToken()); // for
-																	// fillColor
 				float gFillComp = Float.parseFloat(st.nextToken());
 				float bFillComp = Float.parseFloat(st.nextToken());
 				int thickness = Integer.parseInt(st.nextToken());
 				int startX = Integer.parseInt(st.nextToken());
 				int startY = Integer.parseInt(st.nextToken());
+				startY = ymax - startY;
 				data.append("%rectangle " + "\n");
 				data.append("newpath\n");
 				data.append(startX + " " + startY + " " + "moveto" + "\n");
@@ -100,8 +95,8 @@ public class FileIO
 					int y1 = Integer.parseInt(st.nextToken());
 					int x2 = Integer.parseInt(st.nextToken());
 					int y2 = Integer.parseInt(st.nextToken());
-					check(x1 + thickness, y1 + thickness);
-					check(x2 + thickness, y2 + thickness);
+					y1 = ymax - y1;
+					y2 = ymax - y2;
 					data.append(x1 + " " + y1 + " " + x2 + " " + y2 + " " + "lineto" + "\n");
 				}
 				data.append("closepath\n");
@@ -113,17 +108,16 @@ public class FileIO
 			else if (line.equals("polygon"))
 			{
 				float rBrushComp = Float.parseFloat(st.nextToken()); // for
-																		// brushColor
 				float gBrushComp = Float.parseFloat(st.nextToken());
 				float bBrushComp = Float.parseFloat(st.nextToken());
 				float rFillComp = Float.parseFloat(st.nextToken()); // for
-																	// fillColor
 				float gFillComp = Float.parseFloat(st.nextToken());
 				float bFillComp = Float.parseFloat(st.nextToken());
 				int thickness = Integer.parseInt(st.nextToken());
 				int numOfVertices = Integer.parseInt(st.nextToken());
 				int startX = Integer.parseInt(st.nextToken());
 				int startY = Integer.parseInt(st.nextToken());
+				startY = ymax - startY;
 				data.append("%polygon " + numOfVertices + "\n");
 				data.append("newpath\n");
 				data.append(startX + " " + startY + " " + "moveto" + "\n");
@@ -133,8 +127,8 @@ public class FileIO
 					int y1 = Integer.parseInt(st.nextToken());
 					int x2 = Integer.parseInt(st.nextToken());
 					int y2 = Integer.parseInt(st.nextToken());
-					check(x1 + thickness, y1 + thickness);
-					check(x2 + thickness, y2 + thickness);
+					y1 = ymax - y1;
+					y2 = ymax - y2;
 					data.append(x1 + " " + y1 + " " + x2 + " " + y2 + " " + "lineto" + "\n");
 				}
 				data.append("closepath\n");
@@ -145,11 +139,9 @@ public class FileIO
 			}
 		}
 		sb.append("%!PS-Adobe-3.0 EPSF-3.0\n");
-		sb.append("%%BoundingBox: " + (xmin - 20) + " " + (ymin - 20) + " " + (xmax + 20) + " " + (ymax + 20) + "\n");
+		sb.append("%%BoundingBox: " + (xmin - 40) + " " + (ymin - 40) + " " + (xmax + 40) + " " + (ymax + 40) + "\n");
 		sb.append("/edge { setrgbcolor setlinewidth newpath moveto lineto stroke } def\n");
 		sb.append("/circle { setrgbcolor setlinewidth newpath 0 360 arc stroke } def\n");
-		sb.append("180 rotate\n");
-		sb.append(-(xmin + xmax + 20) + " " + -(ymin + ymax + 20) + " " + "translate\n");
 		sb.append(data.toString());
 		try
 		{
@@ -175,9 +167,8 @@ public class FileIO
 			BufferedReader br = new BufferedReader(new FileReader(new File(filePath)));
 			String str = null;
 			br.readLine();
-			br.readLine();
-			br.readLine();
-			br.readLine();
+			String bb = br.readLine();
+			int ymax = Integer.parseInt(bb.split(" ")[4]);
 			br.readLine();
 			br.readLine();
 			while ((str = br.readLine()) != null)
@@ -190,6 +181,8 @@ public class FileIO
 					int y1 = Integer.parseInt(st.nextToken());
 					int x2 = Integer.parseInt(st.nextToken());
 					int y2 = Integer.parseInt(st.nextToken());
+					y1 = ymax - y1 - 40;
+					y2 = ymax - y2 - 40;
 					int thickness = Integer.parseInt(st.nextToken());
 					float redComp = Float.parseFloat(st.nextToken());
 					float greenComp = Float.parseFloat(st.nextToken());
@@ -202,6 +195,7 @@ public class FileIO
 					System.out.println("Creating circle!");
 					int x = Integer.parseInt(st.nextToken());
 					int y = Integer.parseInt(st.nextToken());
+					y = ymax - y;
 					int radius = Integer.parseInt(st.nextToken());
 					int thickness = Integer.parseInt(st.nextToken());
 					float redComp = Float.parseFloat(st.nextToken());
@@ -222,35 +216,26 @@ public class FileIO
 						st = new StringTokenizer(br.readLine());
 						xP[i] = Integer.parseInt(st.nextToken());
 						yP[i] = Integer.parseInt(st.nextToken());
+						yP[i] = ymax - yP[i];
 						st.nextToken();
 						st.nextToken();
-
 					}
 					int width = Math.abs(xP[2] - xP[0]);
 					int height = Math.abs(yP[2] - yP[0]);
 					br.readLine(); // 7
 					st = new StringTokenizer(br.readLine());
 					st.nextToken();
-
 					float rFillComp = Float.parseFloat(st.nextToken()); // for
-																		// fillColor
 					float gFillComp = Float.parseFloat(st.nextToken());
 					float bFillComp = Float.parseFloat(st.nextToken());
-
 					st = new StringTokenizer(br.readLine()); // 8
-
 					float rBrushComp = Float.parseFloat(st.nextToken()); // for
-																			// brushColor
 					float gBrushComp = Float.parseFloat(st.nextToken());
 					float bBrushComp = Float.parseFloat(st.nextToken());
-
 					st.nextToken();
-
 					int thickness = Integer.parseInt(st.nextToken());
-
 					Color fillColor = new Color(rFillComp, gFillComp, bFillComp);
 					Color brushColor = new Color(rBrushComp, gBrushComp, bBrushComp);
-
 					editor.data.add(
 							new Rectangle(new Vertex(xP[0], yP[0]), width, height, thickness, brushColor, fillColor));
 				}
@@ -268,32 +253,23 @@ public class FileIO
 						st = new StringTokenizer(br.readLine());
 						xP[i] = Integer.parseInt(st.nextToken());
 						yP[i] = Integer.parseInt(st.nextToken());
+						yP[i] = ymax - yP[i];
 					}
 					br.readLine(); // 7
 					st = new StringTokenizer(br.readLine());
 					st.nextToken();
-
 					float rFillComp = Float.parseFloat(st.nextToken()); // for
-																		// fillColor
 					float gFillComp = Float.parseFloat(st.nextToken());
 					float bFillComp = Float.parseFloat(st.nextToken());
-
 					st = new StringTokenizer(br.readLine()); // 8
-
 					float rBrushComp = Float.parseFloat(st.nextToken()); // for
-																			// brushColor
 					float gBrushComp = Float.parseFloat(st.nextToken());
 					float bBrushComp = Float.parseFloat(st.nextToken());
-
 					st.nextToken();
-
 					int thickness = Integer.parseInt(st.nextToken());
-
 					Color fillColor = new Color(rFillComp, gFillComp, bFillComp);
 					Color brushColor = new Color(rBrushComp, gBrushComp, bBrushComp);
-
 					editor.data.add(new Polygon(xP, yP, thickness, brushColor, fillColor));
-
 				}
 			}
 			br.close();
@@ -306,5 +282,35 @@ public class FileIO
 		{
 			e.printStackTrace();
 		}
+	}
+
+	public void setBoundingBox()
+	{
+		for (Edge e : editor.data.edges)
+		{
+			check(e.u.x + e.thickness, e.u.y + e.thickness);
+			check(e.v.x + e.thickness, e.v.y + e.thickness);
+			check(e.u.x - e.thickness, e.u.y - e.thickness);
+			check(e.v.x - e.thickness, e.v.y - e.thickness);
+		}
+		for (Circle c : editor.data.circles)
+		{
+			check(c.center.x + c.radius + c.thickness, c.center.y + c.radius + c.thickness);
+			check(c.center.x - c.radius - c.thickness, c.center.y - c.radius - c.thickness);
+		}
+		for (Rectangle r : editor.data.rectangles)
+		{
+			check(r.origin.x + r.width + r.thickness, r.origin.y + r.height + r.thickness);
+			check(r.origin.x - r.width - r.thickness, r.origin.y + -r.height - r.thickness);
+		}
+		for (Polygon p : editor.data.polygons)
+		{
+			for (Vertex v : p.vertices)
+			{
+				check(v.x - p.thickness, v.y - p.thickness);
+				check(v.x + p.thickness, v.y + p.thickness);
+			}
+		}
+
 	}
 }
