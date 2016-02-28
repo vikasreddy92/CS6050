@@ -9,13 +9,16 @@ public class Data {
 	ArrayList<Edge> edges = new ArrayList<Edge>();
 	ArrayList<Circle> circles = new ArrayList<Circle>();
 	ArrayList<Rectangle> rectangles = new ArrayList<Rectangle>();
+	ArrayList<Polygon> polygons = new ArrayList<Polygon>();
 
 	Vertex p;
+	Editor editor;
+	
 	Circle tempCircle;
 	Rectangle tempRectangle;
 	Edge tempEdge;
-	Editor editor;
-
+	Polygon tempPolygon;
+	
 	Data(Editor editor) {
 		this.editor = editor;
 	}
@@ -26,24 +29,25 @@ public class Data {
 	}
 
 	// Adds an edge
-	public void add(Vertex start, Vertex end) {
-		edges.add(new Edge(start, end));
+
+	public void add(Edge e) {
+		edges.add(e);
 	}
 
 	// Adds a circle
-	public void add(Vertex center, int radius) {
-		circles.add(new Circle(center, radius));
+	public void add(Circle circle) {
+		circles.add(circle);
 	}
-
+	
 	// Adds a rectangle
-	public void add(Vertex origin, int width, int height) {
-		rectangles.add(new Rectangle(origin, width, height));
-	}
-
 	public void add(Rectangle rect) {
 		rectangles.add(rect);
 	}
 
+	public void add(Polygon polygon) {
+		polygons.add(polygon);
+	}
+	
 	public void move(int x, int y) {
 		if (p == null)
 			p = findVertex(x, y);
@@ -112,7 +116,17 @@ public class Data {
 		}
 	}
 
-	public void mark(int x, int y) {
+	public void removePolygon(int x, int y) {
+		Polygon nearestPolygon = findPolygon(x, y);
+		if(tempPolygon != null && tempPolygon.equals(nearestPolygon)) {
+			polygons.remove(nearestPolygon);
+			tempPolygon = null;
+		} else {
+			tempPolygon = nearestPolygon;
+		}
+	}
+	
+	/*public void mark(int x, int y) {
 		Vertex q = findVertex(x, y);
 		if (p == null)
 			p = q;
@@ -123,7 +137,7 @@ public class Data {
 				edges.remove(new Edge(p, q));
 			p = null;
 		}
-	}
+	}*/
 	
 	public Vertex findVertex(int x, int y) {
 		Vertex nearestVertex = null;
@@ -138,6 +152,22 @@ public class Data {
 		return nearestVertex;
 	}
 
+
+	public Edge findNearestEdge(int x, int y) {
+		Edge nearestEdge = null;
+		int minDist = Integer.MAX_VALUE;
+		for (Edge e : edges) {
+			int dist1 = dist2(e.u.x, e.u.y, x, y);
+			int dist2 = dist2(e.u.x, e.u.y, x, y);
+			int dist = Math.min(dist1, dist2);
+			if(minDist > dist) {
+				minDist = dist;
+				nearestEdge = e;
+			}
+		}
+		return nearestEdge;
+	}
+	
 	public Circle findCircle(int x, int y) {
 		int min = Integer.MAX_VALUE;
 		Circle circle = null;
@@ -171,21 +201,33 @@ public class Data {
 		return rectangle;
 	}
 	
-	public Edge findNearestEdge(int x, int y) {
-		Edge nearestEdge = null;
-		int minDist = Integer.MAX_VALUE;
-		for (Edge e : edges) {
-			int dist1 = dist2(e.u.x, e.u.y, x, y);
-			int dist2 = dist2(e.u.x, e.u.y, x, y);
-			int dist = Math.min(dist1, dist2);
-			if(minDist > dist) {
-				minDist = dist;
-				nearestEdge = e;
+	public Polygon findPolygon(int x, int y) {
+		int minDistance = Integer.MAX_VALUE;
+		Polygon polygon = null;
+		for(Polygon p : polygons) {
+			Vertex nearestVertex = findNearestVertex(x, y, p.vertices);
+			int min = dist2(x, y, nearestVertex.x, nearestVertex.y);
+			if(minDistance > min) {
+				polygon = p;
+				minDistance = min;
 			}
 		}
-		return nearestEdge;
+		return polygon;
 	}
-
+	
+	public Vertex findNearestVertex(int x, int y, ArrayList<Vertex> vertices) {
+		Vertex nearestVertex = null;
+		int minDist = Integer.MAX_VALUE;
+		for (Vertex v : vertices) {
+			int dist = dist2(v.x, v.y, x, y);
+			if(minDist > dist) {
+				minDist = dist;
+				nearestVertex = v;
+			}
+		}
+		return nearestVertex;
+	}
+	
 	public int dist2(int x1, int y1, int x2, int y2) {
 		int x = x1 - x2;
 		int y = y1 - y2;
@@ -203,7 +245,7 @@ public class Data {
 	
 	public String toString() {
 		return "Vertices: " + vertices.size() + " Edges: " + edges.size() + " Circles: " + circles.size()
-				+ " Rectangles: " + rectangles.size();
+				+ " Rectangles: " + rectangles.size() + " Polygons: " + polygons.size();
 	}
 
 	public String toText() {
@@ -216,6 +258,8 @@ public class Data {
 			sb.append("circle " + c + "\n");
 		for (Rectangle r : rectangles)
 			sb.append("rectangle " + r + "\n");
+		for (Polygon p : polygons)
+			sb.append("polygon " + p + "\n");
 		return sb.toString();
 	}
 	
@@ -224,4 +268,6 @@ public class Data {
 		Arrays.sort(nums);
 		return nums[0];
 	}
+
+
 }

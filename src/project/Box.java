@@ -15,6 +15,7 @@ public class Box extends JPanel implements ActionListener {
 	public final String AV = "Add Vertex";
 	final String MV = "Move Vertex";
 	final String RV = "Remove Vertex";
+	
 	final String AE = "Add Edge";
 	final String RE = "Remove Edge";
 
@@ -29,7 +30,10 @@ public class Box extends JPanel implements ActionListener {
 	final String MR = "Move Rectangle";
 	final String RR = "Remove Rectangle";
 
-	JRadioButton av, mv, rv, ae, re, al, rl, ac, mc, rc, ar, mr, rr;
+	final String AP = "Add Polygon";
+	final String RP = "Remove Polygon";
+	
+	JRadioButton av, mv, rv, ae, re, al, rl, ac, mc, rc, ar, mr, rr, ap, rp;
 
 	Editor editor;
 
@@ -54,6 +58,9 @@ public class Box extends JPanel implements ActionListener {
 		mr = new JRadioButton(MR);
 		rr = new JRadioButton(RR);
 
+		ap = new JRadioButton(AP);
+		rp = new JRadioButton(RP);
+		
 		av.addActionListener(this);
 		mv.addActionListener(this);
 		rv.addActionListener(this);
@@ -71,6 +78,9 @@ public class Box extends JPanel implements ActionListener {
 		mr.addActionListener(this);
 		rr.addActionListener(this);
 
+		ap.addActionListener(this);
+		rp.addActionListener(this);
+		
 		ButtonGroup group = new ButtonGroup();
 		group.add(av);
 		group.add(mv);
@@ -88,6 +98,9 @@ public class Box extends JPanel implements ActionListener {
 		group.add(mr);
 		group.add(rr);
 
+		group.add(ap);
+		group.add(rp);
+		
 		setLayout(new GridLayout(0, 1));
 
 	}

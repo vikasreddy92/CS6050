@@ -5,123 +5,151 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputListener;
 
-class Board extends JPanel implements MouseInputListener {
+class Board extends JPanel implements MouseInputListener
+{
 
 	private static final long serialVersionUID = 1L;
-	private static int sX = -1, sY = -1, currX, currY;
-	private static boolean dragging = false;
-	private int brushSize;
+	private static int sX = Integer.MIN_VALUE, sY = Integer.MIN_VALUE, currX, currY;
+	private static boolean dragging = false, moving = false;
+	private static int brushSize = 1;
+	private static Color brushColor = Color.BLACK;
+	private static Color fillColor = Color.WHITE;
 
 	Editor editor;
 	Circle movingCircle;
 	Rectangle movingRectangle;
+	ArrayList<Vertex> polygonVertices;
 
-	Board(Editor editor) {
+	Board(Editor editor)
+	{
 		this.editor = editor;
 		addMouseListener(this);
 		addMouseMotionListener(this);
 	}
 
-	public void paint(Graphics g) {
-		int r = 5;
-		for (Vertex v : editor.data.vertices) {
-			if (v != editor.data.p)
-				g.fillOval(v.x - r, v.y - r, r * 2, r * 2);
-			else {
-				r += 3;
-				g.fillOval(v.x - r, v.y - r, r * 2, r * 2);
-				r -= 3;
-			}
-		}
-		
-		for (Edge e : editor.data.edges) {
-			if (e != editor.data.tempEdge) {
-				g.drawLine(e.u.x, e.u.y, e.v.x, e.v.y);
-			} else {
-				g.setColor(Color.RED);
-				g.drawLine(e.u.x, e.u.y, e.v.x, e.v.y);
-				g.setColor(Color.BLACK);
-			}
-		}
-
-		for (Circle c : editor.data.circles) {
-			if (c != editor.data.tempCircle) {
-				drawCircle(c.center.x, c.center.y, c.radius, g);
-			} else {
-				g.setColor(Color.RED);
-				drawCircle(c.center.x, c.center.y, c.radius, g);
-				g.setColor(Color.BLACK);
-			}
-		}
-
+	public void paint(Graphics g)
+	{
 		Graphics2D g2d = (Graphics2D) g;
-		for (Rectangle r1 : editor.data.rectangles) {
-			g2d.setStroke(new BasicStroke(r1.thickness));
-			if (r1 != editor.data.tempRectangle) {
-				g2d.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
-			} else {
-				g2d.setColor(Color.RED);
-				g2d.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
-				g2d.setColor(Color.BLACK);
-			}
-		}
+		AffineTransform at = g2d.getTransform();
+		at.translate(0, 800);
+		
+		for (Edge e : editor.data.edges)
+			drawEdge(e, g2d);
 
-		if (editor.window.box.mode.equals(editor.window.box.AC)) {
-			if (dragging) {
-				int radius = Math.abs(currX - sX);
-				drawCircle(sX, sY, radius, g);
-			}
-		} else if (editor.window.box.mode.equals(editor.window.box.MC)) {
+		for (Circle c : editor.data.circles)
+			drawCircle(c, g);
+
+		for (Rectangle r1 : editor.data.rectangles)
+			drawRectangle(r1, g2d);
+
+		for (Polygon p1 : editor.data.polygons)
+			drawPolygon(p1, g2d);
+
+		if (editor.window.box.mode.equals(editor.window.box.AC))
+		{
+			int radius = Math.abs(currX - sX);
+			drawCircle(sX, sY, radius, brushColor, brushSize, g);
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MC))
+		{
 			if (dragging && movingCircle != null)
-				drawCircle(sX, sY, movingCircle.radius, g);
-		} else if (editor.window.box.mode.equals(editor.window.box.AR)) {
+				drawCircle(sX, sY, movingCircle.radius, movingCircle.brushColor, movingCircle.thickness, g);
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AR))
+		{
 			drawRect(sX, sY, currX, currY, g);
-		} else if (editor.window.box.mode.equals(editor.window.box.AL)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AL))
+		{
+			g2d.setColor(brushColor);
+			g2d.setStroke(new BasicStroke(brushSize));
 			if (dragging)
-				g.drawLine(sX, sY, currX, currY);
-		} else if (editor.window.box.mode.equals(editor.window.box.MR)) {
+				g2d.drawLine(sX, sY, currX, currY);
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MR))
+		{
 			if (dragging)
 				g.drawRect(currX, currY, movingRectangle.width, movingRectangle.height);
 		}
+		else if (editor.window.box.mode.equals(editor.window.box.AP))
+		{
+			if (polygonVertices != null)
+			{
+				int n = polygonVertices.size();
+				for (int i = 0; i < n - 1; i++)
+					drawEdge(new Edge(polygonVertices.get(i), polygonVertices.get(i + 1), brushSize, brushColor), g2d);
+			}
+			if (moving)
+				g2d.drawLine(sX, sY, currX, currY);
+		}
 	}
 
-	public void mouseClicked(MouseEvent e) {}
+	public void mouseClicked(MouseEvent e)
+	{
+	}
 
-	public void mouseMoved(MouseEvent e) {
+	public void mouseMoved(MouseEvent e)
+	{
+		if (editor.window.box.mode.equals(editor.window.box.AP))
+		{
+			currX = e.getX();
+			currY = e.getY();
+		}
+		editor.refresh();
 		editor.window.message.setText(editor.data + "   " + "X: " + e.getX() + ", Y: " + e.getY());
 	}
 
-	public void mouseExited(MouseEvent e) {
+	public void mouseExited(MouseEvent e)
+	{
 		editor.window.message.setText(editor.data.toString());
 		editor.refresh();
 	}
 
-	public void mouseEntered(MouseEvent e) {
+	public void mouseEntered(MouseEvent e)
+	{
 		editor.window.message.setText(editor.data.toString());
 		editor.refresh();
 	}
 
-	public void mouseDragged(MouseEvent e) {
+	public void mouseDragged(MouseEvent e)
+	{
 		dragging = true;
-		if (editor.window.box.mode.equals(editor.window.box.AC)) {
+		if (editor.window.box.mode.equals(editor.window.box.AC))
+		{
 			currX = e.getX();
 			currY = e.getY();
-		} else if (editor.window.box.mode.equals(editor.window.box.MC)) {
-			if (movingCircle != null) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MC))
+		{
+			if (movingCircle != null)
+			{
 				sX = movingCircle.center.x - (currX - e.getX());
 				sY = movingCircle.center.y - (currY - e.getY());
 			}
-		} else if (editor.window.box.mode.equals(editor.window.box.AR)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AR))
+		{
 			currX = e.getX();
 			currY = e.getY();
-		} else if (editor.window.box.mode.equals(editor.window.box.AL)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AL))
+		{
 			currX = e.getX();
 			currY = e.getY();
-		} else if (editor.window.box.mode.equals(editor.window.box.MR)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MR))
+		{
+			currX = e.getX();
+			currY = e.getY();
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AP))
+		{
 			currX = e.getX();
 			currY = e.getY();
 		}
@@ -129,109 +157,288 @@ class Board extends JPanel implements MouseInputListener {
 		editor.refresh();
 	}
 
-	public void mousePressed(MouseEvent e) {
+	public void mousePressed(MouseEvent e)
+	{
+
 		int x = e.getX();
 		int y = e.getY();
 
-		if (editor.window.box.mode.equals(editor.window.box.AV))
-			editor.data.add(x, y);
-		else if (editor.window.box.mode.equals(editor.window.box.MV))
-			editor.data.move(x, y);
-		else if (editor.window.box.mode.equals(editor.window.box.RV))
-			editor.data.remove(x, y);
-		else if (editor.window.box.mode.equals(editor.window.box.AE))
-			editor.data.mark(x, y);
-		else if (editor.window.box.mode.equals(editor.window.box.RE))
-			editor.data.mark(x, y);
-		else if (editor.window.box.mode.equals(editor.window.box.AC)) {
+		if (editor.window.box.mode.equals(editor.window.box.AC))
+		{
 			sX = x;
 			sY = y;
-		} else if (editor.window.box.mode.equals(editor.window.box.MC)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MC))
+		{
 			movingCircle = editor.data.moveCircle(x, y);
-			if (movingCircle != null) {
+			if (movingCircle != null)
+			{
 				sX = movingCircle.center.x;
 				sY = movingCircle.center.y;
 				currX = x;
 				currY = y;
 			}
-		} else if (editor.window.box.mode.equals(editor.window.box.RC))
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.RC))
 			editor.data.removeCircle(x, y);
-		else if (editor.window.box.mode.equals(editor.window.box.AR)) {
+		else if (editor.window.box.mode.equals(editor.window.box.AR))
+		{
 			currX = sX = x;
 			currY = sY = y;
-		} else if (editor.window.box.mode.equals(editor.window.box.MR)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MR))
+		{
 			movingRectangle = editor.data.moveRectangle(x, y);
-			if (movingRectangle != null) {
-				currX = movingRectangle.origin.x;
-				currY = movingRectangle.origin.y;
+			if (movingRectangle != null)
+			{
+				currX = x - movingRectangle.origin.x;
+				currY = y - movingRectangle.origin.y;
+				brushSize = movingRectangle.thickness;
+				fillColor = movingRectangle.fillColor;
 			}
-		} else if (editor.window.box.mode.equals(editor.window.box.RR)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.RR))
+		{
 			editor.data.removeRectangle(x, y);
-		} else if (editor.window.box.mode.equals(editor.window.box.AL)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AL))
+		{
 			sX = x;
 			sY = y;
-		} else if (editor.window.box.mode.equals(editor.window.box.RL)) {
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.RL))
+		{
 			editor.data.removeLine(x, y);
 		}
+		else if (editor.window.box.mode.equals(editor.window.box.AP))
+		{
+			if (polygonVertices == null)
+			{
+				polygonVertices = new ArrayList<Vertex>();
+				currX = sX = x;
+				currY = sY = y;
+				polygonVertices.add(new Vertex(sX, sY));
+				moving = true;
+			}
+			else
+			{
+				polygonVertices.add(new Vertex(currX, currY));
+				sX = currX;
+				currX = x;
+				sY = currY;
+				currY = y;
+			}
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.RP))
+		{
+			editor.data.removePolygon(x, y);
+		}
 		editor.refresh();
 	}
 
-	public void mouseReleased(MouseEvent e) {
+	public void mouseReleased(MouseEvent e)
+	{
 		dragging = false;
-		if (editor.window.box.mode.equals(editor.window.box.AC)) {
+		if (editor.window.box.mode.equals(editor.window.box.AC))
+		{
 			int radius = Math.abs(sX - currX);
-			editor.data.add(new Vertex(sX, sY), radius);
-		} else if (editor.window.box.mode.equals(editor.window.box.MC)) {
-			if (movingCircle != null) {
-				editor.data.add(new Vertex(sX, sY), movingCircle.radius);
+			editor.data.add(new Circle(new Vertex(sX, sY), radius, brushSize, brushColor, fillColor));
+			currX = sX = Integer.MIN_VALUE;
+			currY = sY = Integer.MIN_VALUE;
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MC))
+		{
+			if (movingCircle != null)
+			{
+				editor.data.add(new Circle(new Vertex(sX, sY), movingCircle.radius, movingCircle.thickness,
+						movingCircle.brushColor, movingCircle.fillColor));
 				editor.data.circles.remove(movingCircle);
 			}
-		} else if (editor.window.box.mode.equals(editor.window.box.AR)) {
-			editor.data.add(getReactangle(sX, sY, currX, currY, brushSize));
-		} else if (editor.window.box.mode.equals(editor.window.box.MR)) {
-			if (movingRectangle != null) {
-				editor.data.add(new Rectangle(new Vertex(currX, currY), movingRectangle.width, movingRectangle.height, brushSize));
+			currX = sX = Integer.MIN_VALUE;
+			currY = sY = Integer.MIN_VALUE;
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AR))
+		{
+			editor.data.add(getReactangle(sX, sY, currX, currY, brushSize, brushColor, fillColor));
+			currX = sX = Integer.MIN_VALUE;
+			currY = sY = Integer.MIN_VALUE;
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MR))
+		{
+			if (movingRectangle != null)
+			{
+				editor.data.add(new Rectangle(new Vertex(currX, currY), movingRectangle.width, movingRectangle.height,
+						movingRectangle.thickness, movingRectangle.brushColor, movingRectangle.fillColor));
 				editor.data.rectangles.remove(movingRectangle);
 			}
-		} else if (editor.window.box.mode.equals(editor.window.box.AL)) {
-			editor.data.add(new Vertex(sX, sY), new Vertex(currX, currY));
+			currX = sX = Integer.MIN_VALUE;
+			currY = sY = Integer.MIN_VALUE;
 		}
-		currX = sX = e.getX();
-		currY = sY = e.getY();
+		else if (editor.window.box.mode.equals(editor.window.box.AL))
+		{
+			editor.data.add(new Edge(new Vertex(sX, sY), new Vertex(currX, currY), brushSize, brushColor));
+			currX = sX = Integer.MIN_VALUE;
+			currY = sY = Integer.MIN_VALUE;
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AP))
+		{
+			if (Polygon.isPolygone(polygonVertices))
+			{
+				editor.data.add(new Polygon(polygonVertices.clone(), brushSize, brushColor, fillColor));
+				polygonVertices.clear();
+				polygonVertices = null;
+				moving = false;
+				currX = Integer.MIN_VALUE;
+				currY = Integer.MIN_VALUE;
+			}
+		}
 		editor.refresh();
 	}
-	
-	public void drawCircle(int x, int y, int radius, Graphics g) {
-		int r = 5;
-		g.fillOval(x - r, y - r, r * 2, r * 2);
-		g.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+
+	public void drawCircle(Circle c, Graphics g)
+	{
+		Graphics2D g2d = (Graphics2D) g;
+		int r = 3;
+		int x = c.center.x;
+		int y = c.center.y;
+		int radius = c.radius;
+		if (editor.data.tempCircle == c)
+		{
+			g2d.setColor(Color.RED);
+			g2d.setStroke(new BasicStroke(c.thickness));
+			g2d.fillOval(x - r, y - r, r * 2, r * 2);
+			g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+		}
+		else
+		{
+			g2d.setColor(c.brushColor);
+			g2d.setStroke(new BasicStroke(c.thickness));
+			g2d.fillOval(x - r, y - r, r * 2, r * 2);
+			g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+		}
 	}
 
-	public void drawRect(int sX2, int sY2, int currX2, int currY2, Graphics g) {
+	public void drawCircle(int x, int y, int radius, Color color, int brushSize, Graphics g)
+	{
+		g.setColor(brushColor);
+		Graphics2D g2d = (Graphics2D) g;
+		int r = 5;
+		g2d.setStroke(new BasicStroke(brushSize));
+		g2d.fillOval(x - r, y - r, r * 2, r * 2);
+		g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+	}
+
+	public void drawRect(int sX2, int sY2, int currX2, int currY2, Graphics g)
+	{
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setStroke(new BasicStroke(brushSize));
-		Rectangle rect = getReactangle(sX2, sY2, currX2, currY2, brushSize);
+		g2d.setColor(brushColor);
+		Rectangle rect = getReactangle(sX2, sY2, currX2, currY2, brushSize, brushColor, fillColor);
 		g2d.drawRect(rect.origin.x, rect.origin.y, rect.width, rect.height);
 	}
-	
-	public Rectangle getReactangle(int sX2, int sY2, int currX2, int currY2, int thickness) {
-		int width = -sX2 + currX2;
-		int height = -sY2 + currY2;
+
+	public Rectangle getReactangle(int sX2, int sY2, int currX2, int currY2, int thickness, Color brushColor,
+			Color fillColor)
+	{
+		int width = (int) (-sX2 + currX2 + ((thickness % 2 == 0) ? 0.5 * thickness : 0.5 * (thickness + 1)));
+		int height = (int) (-sY2 + currY2 + ((thickness % 2 == 0) ? 0.5 * thickness : 0.5 * (thickness + 1)));
 		if (width < 0 && height > 0)
-			return new Rectangle(currX2, sY2, -width, height, brushSize);
+			return new Rectangle(new Vertex(currX2, sY2), -width, height, brushSize, brushColor, fillColor);
 		else if (width > 0 && height < 0)
-			return new Rectangle(sX2, currY2, width, -height, brushSize);
+			return new Rectangle(new Vertex(sX2, currY2), width, -height, brushSize, brushColor, fillColor);
 		else if (width < 0 && height < 0)
-			return new Rectangle(currX2, currY2, -width, -height, brushSize);
+			return new Rectangle(new Vertex(currX2, currY2), -width, -height, brushSize, brushColor, fillColor);
 		else
-			return new Rectangle(sX2, sY2, width, height, brushSize);
+			return new Rectangle(new Vertex(sX2, sY2), width, height, brushSize, brushColor, fillColor);
 	}
-	
-	public int getBrushSize() {
+
+	private void drawRectangle(Rectangle r1, Graphics2D g2d)
+	{
+		g2d.setStroke(new BasicStroke(r1.thickness));
+		if (r1 != editor.data.tempRectangle)
+		{
+			g2d.setColor(r1.brushColor);
+			g2d.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
+			g2d.setColor(r1.fillColor);
+			g2d.fillRect(r1.origin.x + (int) (0.5 * r1.thickness), r1.origin.y + (int) (0.5 * r1.thickness),
+					r1.width - (int) (r1.thickness), r1.height - (int) (r1.thickness));
+			g2d.setColor(brushColor);
+		}
+		else
+		{
+			g2d.setColor(Color.RED);
+			g2d.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
+			g2d.setColor(r1.fillColor);
+			g2d.fillRect(r1.origin.x + (int) (0.5 * r1.thickness), r1.origin.y + (int) (0.5 * r1.thickness),
+					r1.width - (int) (r1.thickness), r1.height - (int) (r1.thickness));
+			g2d.setColor(brushColor);
+		}
+	}
+
+	private void drawPolygon(Polygon p1, Graphics2D g2d)
+	{
+		g2d.setStroke(new BasicStroke(p1.thickness));
+		g2d.setColor(p1.brushColor);
+		if (p1 != editor.data.tempPolygon)
+		{
+			g2d.drawPolygon(p1.getXPoints(), p1.getYPoints(), p1.vertices.size());
+			g2d.setColor(p1.fillColor);
+			g2d.fillPolygon(p1.getXPoints(), p1.getYPoints(), p1.vertices.size());
+			g2d.setColor(brushColor);
+		}
+		else
+		{
+			g2d.setColor(Color.RED);
+			g2d.drawPolygon(p1.getXPoints(), p1.getYPoints(), p1.vertices.size());
+			g2d.setColor(p1.fillColor);
+			g2d.fillPolygon(p1.getXPoints(), p1.getYPoints(), p1.vertices.size());
+			g2d.setColor(brushColor);
+		}
+	}
+
+	private void drawEdge(Edge e, Graphics2D g2d)
+	{
+		g2d.setColor(e.color);
+		g2d.setStroke(new BasicStroke(e.thickness));
+		if (e != editor.data.tempEdge)
+		{
+			g2d.drawLine(e.u.x, e.u.y, e.v.x, e.v.y);
+		}
+		else
+		{
+			g2d.setColor(Color.RED);
+			g2d.drawLine(e.u.x, e.u.y, e.v.x, e.v.y);
+			g2d.setColor(getBrushColor());
+		}
+	}
+
+	public int getBrushSize()
+	{
 		return brushSize;
 	}
 
-	public void setBrushSize(int brushSize) {
-		this.brushSize = brushSize;
+	public void setBrushSize(int brushSize)
+	{
+		Board.brushSize = brushSize;
+	}
+
+	public Color getBrushColor()
+	{
+		return brushColor;
+	}
+
+	public void setFillColor(Color fillColor)
+	{
+		Board.fillColor = fillColor;
+	}
+
+	public Color getFillColor()
+	{
+		return Board.fillColor;
+	}
+
+	public void setBrushColor(Color brushColor)
+	{
+		Board.brushColor = brushColor;
 	}
 }

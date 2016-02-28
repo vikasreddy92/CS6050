@@ -35,7 +35,7 @@ public class TextArea extends JTextArea implements ActionListener {
 	}
 
 	public TextArea(Editor editor) {
-		super(0, 35);
+		super(0, 20);
 		this.editor = editor;
 		
 		exportMenuItem = new JMenuItem(EXPORT);
