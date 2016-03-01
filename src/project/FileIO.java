@@ -15,6 +15,7 @@ public class FileIO
 	static int ymin = Integer.MAX_VALUE;
 	static int xmax = Integer.MIN_VALUE;
 	static int ymax = Integer.MIN_VALUE;
+	static int BORDER = 100;
 	Editor editor;
 
 	public FileIO(Editor editor)
@@ -46,7 +47,17 @@ public class FileIO
 		{
 			StringTokenizer st = new StringTokenizer(line);
 			line = st.nextToken();
-			if (line.equals("edge"))
+			if (line.equals("node"))
+			{
+				float rComp = Float.parseFloat(st.nextToken());
+				float gComp = Float.parseFloat(st.nextToken());
+				float bComp = Float.parseFloat(st.nextToken());
+				int x = Integer.parseInt(st.nextToken());
+				int y = Integer.parseInt(st.nextToken());
+				y = ymax - y;
+				data.append(x + " " + y + " " + rComp + " " + gComp + " " + bComp + " " + line + "\n");
+			}
+			else if (line.equals("edge"))
 			{
 				float rComp = Float.parseFloat(st.nextToken());
 				float gComp = Float.parseFloat(st.nextToken());
@@ -63,30 +74,32 @@ public class FileIO
 			}
 			else if (line.equals("circle"))
 			{
-				float rComp = Float.parseFloat(st.nextToken());
-				float gComp = Float.parseFloat(st.nextToken());
-				float bComp = Float.parseFloat(st.nextToken());
+				float rBrushComp = Float.parseFloat(st.nextToken()); // for
+				float gBrushComp = Float.parseFloat(st.nextToken());
+				float bBrushComp = Float.parseFloat(st.nextToken());
+				/*
+				 * float rFillComp = Float.parseFloat(st.nextToken()); // for
+				 * float gFillComp = Float.parseFloat(st.nextToken()); float
+				 * bFillComp = Float.parseFloat(st.nextToken());
+				 */
 				int thickness = Integer.parseInt(st.nextToken());
 				int x = Integer.parseInt(st.nextToken());
 				int y = Integer.parseInt(st.nextToken());
 				int radius = Integer.parseInt(st.nextToken());
 				y = ymax - y;
-				data.append(x + " " + y + " " + radius + " " + thickness + " " + rComp + " " + gComp + " " + bComp + " "
-						+ line + "\n");
+				data.append(x + " " + y + " " + radius + " " + thickness + " " + rBrushComp + " " + gBrushComp + " "
+						+ bBrushComp + " " + line + "\n");
 			}
 			else if (line.equals("rectangle"))
 			{
 				float rBrushComp = Float.parseFloat(st.nextToken()); // for
 				float gBrushComp = Float.parseFloat(st.nextToken());
 				float bBrushComp = Float.parseFloat(st.nextToken());
-				float rFillComp = Float.parseFloat(st.nextToken()); // for
-				float gFillComp = Float.parseFloat(st.nextToken());
-				float bFillComp = Float.parseFloat(st.nextToken());
 				int thickness = Integer.parseInt(st.nextToken());
 				int startX = Integer.parseInt(st.nextToken());
 				int startY = Integer.parseInt(st.nextToken());
 				startY = ymax - startY;
-				data.append("%rectangle " + "\n");
+				data.append("%rectangle" + "\n");
 				data.append("newpath\n");
 				data.append(startX + " " + startY + " " + "moveto" + "\n");
 				for (int i = 0; i < 4; i++)
@@ -97,13 +110,38 @@ public class FileIO
 					int y2 = Integer.parseInt(st.nextToken());
 					y1 = ymax - y1;
 					y2 = ymax - y2;
+					check(x1 + thickness, y1 + thickness);
+					check(x1 - thickness, y1 - thickness);
 					data.append(x1 + " " + y1 + " " + x2 + " " + y2 + " " + "lineto" + "\n");
 				}
 				data.append("closepath\n");
-				data.append("gsave" + " " + rFillComp + " " + gFillComp + " " + bFillComp + " " + "setrgbcolor" + " "
-						+ "fill" + " " + "grestore\n");
 				data.append(rBrushComp + " " + gBrushComp + " " + bBrushComp + " " + "setrgbcolor" + " " + thickness
 						+ " " + "setlinewidth" + " " + "stroke\n");
+				/*
+				 * float rBrushComp = Float.parseFloat(st.nextToken()); // for
+				 * float gBrushComp = Float.parseFloat(st.nextToken()); float
+				 * bBrushComp = Float.parseFloat(st.nextToken()); float
+				 * rFillComp = Float.parseFloat(st.nextToken()); // for float
+				 * gFillComp = Float.parseFloat(st.nextToken()); float bFillComp
+				 * = Float.parseFloat(st.nextToken()); int thickness =
+				 * Integer.parseInt(st.nextToken()); int startX =
+				 * Integer.parseInt(st.nextToken()); int startY =
+				 * Integer.parseInt(st.nextToken()); startY = ymax - startY;
+				 * data.append("%rectangle " + "\n"); data.append("newpath\n");
+				 * data.append(startX + " " + startY + " " + "moveto" + "\n");
+				 * for (int i = 0; i < 4; i++) { int x1 =
+				 * Integer.parseInt(st.nextToken()); int y1 =
+				 * Integer.parseInt(st.nextToken()); int x2 =
+				 * Integer.parseInt(st.nextToken()); int y2 =
+				 * Integer.parseInt(st.nextToken()); y1 = ymax - y1; y2 = ymax -
+				 * y2; data.append(x1 + " " + y1 + " " + x2 + " " + y2 + " " +
+				 * "lineto" + "\n"); } data.append("closepath\n");
+				 * data.append("gsave" + " " + rFillComp + " " + gFillComp + " "
+				 * + bFillComp + " " + "setrgbcolor" + " " + "fill" + " " +
+				 * "grestore\n"); data.append(rBrushComp + " " + gBrushComp +
+				 * " " + bBrushComp + " " + "setrgbcolor" + " " + thickness +
+				 * " " + "setlinewidth" + " " + "stroke\n");
+				 */
 			}
 			else if (line.equals("polygon"))
 			{
@@ -139,18 +177,22 @@ public class FileIO
 			}
 		}
 		sb.append("%!PS-Adobe-3.0 EPSF-3.0\n");
-		sb.append("%%BoundingBox: " + (xmin - 40) + " " + (ymin - 40) + " " + (xmax + 40) + " " + (ymax + 40) + "\n");
+		sb.append("%%BoundingBox: " + (xmin - BORDER) + " " + (ymin - BORDER) + " " + (xmax + BORDER) + " " + (ymax + BORDER) + "\n");
+		sb.append("/node { setrgbcolor newpath 5 0 360 arc fill } def\n");
 		sb.append("/edge { setrgbcolor setlinewidth newpath moveto lineto stroke } def\n");
 		sb.append("/circle { setrgbcolor setlinewidth newpath 0 360 arc stroke } def\n");
+		sb.append("/rectangle { setrgbcolor setlinewidth newpath rectstroke } def\n");
 		sb.append(data.toString());
 		try
 		{
 			FileWriter fw = new FileWriter(new File(filePath));
 			fw.write(sb.toString());
 			fw.close();
+			editor.window.message.setText("Saved successfully.");
 		}
 		catch (IOException e)
 		{
+			editor.window.message.setText("Saving failed.");
 			e.printStackTrace();
 		}
 	}
@@ -168,12 +210,18 @@ public class FileIO
 			String str = null;
 			br.readLine();
 			String bb = br.readLine();
-			int ymax = Integer.parseInt(bb.split(" ")[4]);
+			int ymax = Integer.parseInt(bb.split(" ")[4]) - BORDER;
+			br.readLine();
+			br.readLine();
 			br.readLine();
 			br.readLine();
 			while ((str = br.readLine()) != null)
 			{
 				StringTokenizer st = new StringTokenizer(str);
+				if(str.endsWith("node"))
+				{
+					
+				}
 				if (str.endsWith("edge"))
 				{
 					System.out.println("Creating edge!");
@@ -181,8 +229,8 @@ public class FileIO
 					int y1 = Integer.parseInt(st.nextToken());
 					int x2 = Integer.parseInt(st.nextToken());
 					int y2 = Integer.parseInt(st.nextToken());
-					y1 = ymax - y1 - 40;
-					y2 = ymax - y2 - 40;
+					y1 = ymax - y1;
+					y2 = ymax - y2;
 					int thickness = Integer.parseInt(st.nextToken());
 					float redComp = Float.parseFloat(st.nextToken());
 					float greenComp = Float.parseFloat(st.nextToken());
@@ -202,7 +250,7 @@ public class FileIO
 					float greenComp = Float.parseFloat(st.nextToken());
 					float blueComp = Float.parseFloat(st.nextToken());
 					Color color = new Color(redComp, greenComp, blueComp);
-					editor.data.add(new Circle(new Vertex(x, y), radius, thickness, color, Color.WHITE));
+					editor.data.add(new Circle(new Vertex(x, y), radius, thickness, color));
 				}
 				else if (str.startsWith("%rectangle"))
 				{
@@ -223,21 +271,21 @@ public class FileIO
 					int width = Math.abs(xP[2] - xP[0]);
 					int height = Math.abs(yP[2] - yP[0]);
 					br.readLine(); // 7
-					st = new StringTokenizer(br.readLine());
-					st.nextToken();
-					float rFillComp = Float.parseFloat(st.nextToken()); // for
-					float gFillComp = Float.parseFloat(st.nextToken());
-					float bFillComp = Float.parseFloat(st.nextToken());
+					/*
+					 * float rFillComp = Float.parseFloat(st.nextToken()); //
+					 * for float gFillComp = Float.parseFloat(st.nextToken());
+					 * float bFillComp = Float.parseFloat(st.nextToken());
+					 */
 					st = new StringTokenizer(br.readLine()); // 8
 					float rBrushComp = Float.parseFloat(st.nextToken()); // for
 					float gBrushComp = Float.parseFloat(st.nextToken());
 					float bBrushComp = Float.parseFloat(st.nextToken());
 					st.nextToken();
 					int thickness = Integer.parseInt(st.nextToken());
-					Color fillColor = new Color(rFillComp, gFillComp, bFillComp);
+					// Color fillColor = new Color(rFillComp, gFillComp,
+					// bFillComp);
 					Color brushColor = new Color(rBrushComp, gBrushComp, bBrushComp);
-					editor.data.add(
-							new Rectangle(new Vertex(xP[0], yP[0]), width, height, thickness, brushColor, fillColor));
+					editor.data.add(new Rectangle(new Vertex(xP[0], yP[0]), width, height, thickness, brushColor));
 				}
 				else if (str.startsWith("%polygon"))
 				{
@@ -286,29 +334,36 @@ public class FileIO
 
 	public void setBoundingBox()
 	{
+		for (Node n : editor.data.nodes)
+		{
+			check(n.x + 20, n.y + 20);
+			check(n.x - 20, n.y - 20);
+		}
 		for (Edge e : editor.data.edges)
 		{
-			check(e.u.x + e.thickness, e.u.y + e.thickness);
-			check(e.v.x + e.thickness, e.v.y + e.thickness);
-			check(e.u.x - e.thickness, e.u.y - e.thickness);
-			check(e.v.x - e.thickness, e.v.y - e.thickness);
+			check(e.u.x, e.u.y);
+			check(e.v.x, e.v.y);
+			check(e.u.x, e.u.y);
+			check(e.v.x, e.v.y);
 		}
 		for (Circle c : editor.data.circles)
 		{
-			check(c.center.x + c.radius + c.thickness, c.center.y + c.radius + c.thickness);
-			check(c.center.x - c.radius - c.thickness, c.center.y - c.radius - c.thickness);
+			System.out.println((c.center.x + c.radius) +", " + (c.center.y + c.radius));
+			System.out.println((c.center.x - c.radius) +", " + (c.center.y - c.radius));
+			check((c.center.x + c.radius), (c.center.y + c.radius));
+			check((c.center.x - c.radius), (c.center.y - c.radius));
 		}
 		for (Rectangle r : editor.data.rectangles)
 		{
-			check(r.origin.x + r.width + r.thickness, r.origin.y + r.height + r.thickness);
-			check(r.origin.x - r.width - r.thickness, r.origin.y + -r.height - r.thickness);
+			check(r.origin.x + r.width, r.origin.y + r.height);
+//			check(r.origin.x - r.width, r.origin.y - r.height);
 		}
 		for (Polygon p : editor.data.polygons)
 		{
 			for (Vertex v : p.vertices)
 			{
-				check(v.x - p.thickness, v.y - p.thickness);
-				check(v.x + p.thickness, v.y + p.thickness);
+				check(v.x, v.y);
+				check(v.x, v.y);
 			}
 		}
 

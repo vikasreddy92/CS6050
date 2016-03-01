@@ -17,6 +17,8 @@ import javax.swing.border.Border;
 
 public class ToolBox extends JToolBar implements ActionListener {
 	private static final long serialVersionUID = 1L;
+	
+	public static final String NODE = "Node";
 	public static final String LINE = "Line";
 	public static final String CIRCLE = "Circle";
 	public static final String RECTANGLE = "Rectangle";
@@ -27,11 +29,12 @@ public class ToolBox extends JToolBar implements ActionListener {
 	
 	private static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-	public static String action = LINE;
+	public static String action = NODE;
 
 	private JComboBox<String> brushSizes;
 
-	JButton lineBtn;
+	JButton nodeBtn;
+	private JButton lineBtn;
 	private JButton circleBtn;
 	private JButton rectangleBtn;
 	private JButton polygonBtn; 
@@ -39,6 +42,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 	private JButton brushColorBtn;
 	private JButton fillColorBtn;
 	
+	private Image nodeImage;
 	private Image lineImage;
 	private Image circleImage;
 	private Image rectangleImage;
@@ -48,7 +52,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 	private Image fillColorImage;
 	
 	private Dimension btnDimension;
-
+	
 	String[] sizeOptions = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" };
 	Editor editor;
 
@@ -57,6 +61,9 @@ public class ToolBox extends JToolBar implements ActionListener {
 
 		btnDimension = new Dimension(20, 20);
 		Border empty = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+	
+		nodeImage = new ImageIcon(classLoader.getResource("resources/node.png")).getImage();
+		nodeImage = nodeImage.getScaledInstance(btnDimension.width, btnDimension.height, java.awt.Image.SCALE_SMOOTH);
 		
 		lineImage = new ImageIcon(classLoader.getResource("resources/line.png")).getImage();
 		lineImage = lineImage.getScaledInstance(btnDimension.width, btnDimension.height, java.awt.Image.SCALE_SMOOTH);
@@ -78,6 +85,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 		fillColorImage = new ImageIcon(classLoader.getResource("resources/fill-color.png")).getImage();
 		fillColorImage = fillColorImage.getScaledInstance(btnDimension.width, btnDimension.height, java.awt.Image.SCALE_SMOOTH);
 		
+		nodeBtn = new JButton(NODE, new ImageIcon(nodeImage));
 		lineBtn = new JButton(LINE, new ImageIcon(lineImage));
 		circleBtn = new JButton(CIRCLE, new ImageIcon(circleImage));
 		rectangleBtn = new JButton(RECTANGLE, new ImageIcon(rectangleImage));
@@ -92,6 +100,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 		brushSizes = new JComboBox<>(sizeOptions);
 		brushSizes.setActionCommand(BRUSH_SIZE);
 		
+		nodeBtn.setSize(btnDimension);
 		lineBtn.setSize(btnDimension);
 		circleBtn.setSize(btnDimension);
 		rectangleBtn.setSize(btnDimension);
@@ -109,12 +118,13 @@ public class ToolBox extends JToolBar implements ActionListener {
 
 		addSeparator(btnDimension);
 		add(new JLabel("Shapes: "));
+		add(nodeBtn);
 		add(lineBtn);
 		add(circleBtn);
 		add(rectangleBtn);
 		add(polygonBtn);
 		addSeparator(btnDimension);
-		add(new JLabel("Brush Size: "));
+		add(new JLabel("Pen Size: "));
 		add(brushSizes);
 		addSeparator(btnDimension);
 		add(new JLabel("Pen Color: "));
@@ -124,6 +134,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 		add(fillColorBtn);
 		addSeparator(btnDimension);
 		
+		nodeBtn.addActionListener(this);
 		lineBtn.addActionListener(this);
 		circleBtn.addActionListener(this);
 		rectangleBtn.addActionListener(this);
@@ -141,6 +152,14 @@ public class ToolBox extends JToolBar implements ActionListener {
 		editor.window.box.validate();
 		editor.window.box.revalidate();
 		switch (action) {
+		case NODE:
+			editor.window.box.removeAll();
+			editor.window.box.an.setSelected(true);
+			editor.window.box.mode = editor.window.box.AN;
+			editor.window.box.add(editor.window.box.an);
+			editor.window.box.add(editor.window.box.mn);
+			editor.window.box.add(editor.window.box.rn);
+			break;
 		case LINE:
 			editor.window.box.removeAll();
 			editor.window.box.al.setSelected(true);
@@ -176,14 +195,14 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.board.setBrushSize(Integer.parseInt((String) cb.getSelectedItem()));
 			break;
 		case BRUSH_COLOR:
-			Color color = JColorChooser.showDialog(this, "Select a color", Color.BLACK);
+			Color color = JColorChooser.showDialog(this, "Pen color", Color.BLACK);
 			if(color != null) {
 				editor.window.board.setBrushColor(color);
 				System.out.println("Brush color changed to: " + editor.window.board.getBrushColor().toString());
 			}
 			break;
 		case FILL_COLOR:
-			Color color1 = JColorChooser.showDialog(this, "Select a color", Color.BLACK);
+			Color color1 = JColorChooser.showDialog(this, "Brush color", Color.BLACK);
 			if(color1 != null) {
 				editor.window.board.setFillColor(color1);
 				System.out.println("Brush color changed to: " + editor.window.board.getBrushColor().toString());

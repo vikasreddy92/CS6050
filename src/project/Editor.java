@@ -36,7 +36,7 @@ public class Editor implements Runnable {
 	public static void main(String[] args) {
 		Editor editor = new Editor();
 		editor.refresh();
-		editor.window.toolBox.lineBtn.doClick();
+		editor.window.toolBox.nodeBtn.doClick();
 		javax.swing.SwingUtilities.invokeLater(editor);
 	}
 }

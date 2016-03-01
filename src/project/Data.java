@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 public class Data {
 
+	ArrayList<Node>	nodes = new ArrayList<Node>();
 	ArrayList<Vertex> vertices = new ArrayList<Vertex>();
 	ArrayList<Edge> edges = new ArrayList<Edge>();
 	ArrayList<Circle> circles = new ArrayList<Circle>();
@@ -14,6 +15,7 @@ public class Data {
 	Vertex p;
 	Editor editor;
 	
+	Node tempNode;
 	Circle tempCircle;
 	Rectangle tempRectangle;
 	Edge tempEdge;
@@ -28,6 +30,9 @@ public class Data {
 		vertices.add(new Vertex(x, y));
 	}
 
+	public void add(Node n) {
+		nodes.add(n);
+	}
 	// Adds an edge
 
 	public void add(Edge e) {
@@ -64,6 +69,12 @@ public class Data {
 		}
 	}
 	
+	public Node moveNode(int x, int y) 
+	{
+		Node node = findNode(x, y);
+		tempNode = node;
+		return node;
+	}
 	public Circle moveCircle(int x, int y) {
 		Circle circle = findCircle(x, y);
 		tempCircle = circle;
@@ -86,6 +97,15 @@ public class Data {
 		}
 	}
 	
+	public void removeNode(int x, int y) {
+		Node node = findNode(x, y);
+		if(tempNode != null && tempNode.equals(node)) {
+			nodes.remove(node);
+			tempNode = null;
+		} else {
+			tempNode = node;
+		}
+	}
 	public void removeLine(int x, int y) {
 		Edge nearestEdge = findNearestEdge(x, y);
 		if (tempEdge != null && tempEdge.equals(nearestEdge)) {
@@ -125,8 +145,8 @@ public class Data {
 			tempPolygon = nearestPolygon;
 		}
 	}
-	
-	/*public void mark(int x, int y) {
+	/*
+	public void mark(int x, int y) {
 		Vertex q = findVertex(x, y);
 		if (p == null)
 			p = q;
@@ -137,8 +157,8 @@ public class Data {
 				edges.remove(new Edge(p, q));
 			p = null;
 		}
-	}*/
-	
+	}
+	*/
 	public Vertex findVertex(int x, int y) {
 		Vertex nearestVertex = null;
 		int distToNearestVertex = Integer.MAX_VALUE;
@@ -152,7 +172,18 @@ public class Data {
 		return nearestVertex;
 	}
 
-
+	public Node findNode(int x, int y) {
+		Node nearestNode = null;
+		int distToNearestNode = Integer.MAX_VALUE;
+		for (Node n : nodes) {
+			int d = dist2(n.x, n.y, x, y);
+			if (distToNearestNode > d) {
+				distToNearestNode = d;
+				nearestNode = n;
+			}
+		}
+		return nearestNode;
+	}
 	public Edge findNearestEdge(int x, int y) {
 		Edge nearestEdge = null;
 		int minDist = Integer.MAX_VALUE;
@@ -244,14 +275,14 @@ public class Data {
 	}
 	
 	public String toString() {
-		return "Vertices: " + vertices.size() + " Edges: " + edges.size() + " Circles: " + circles.size()
+		return "Nodes: " + nodes.size() + " Edges: " + edges.size() + " Circles: " + circles.size()
 				+ " Rectangles: " + rectangles.size() + " Polygons: " + polygons.size();
 	}
 
 	public String toText() {
 		StringBuilder sb = new StringBuilder();
-		for (Vertex v : vertices)
-			sb.append("vertex " + v + "\n");
+		for (Node v : nodes)
+			sb.append("node " + v + "\n");
 		for (Edge e : edges)
 			sb.append("edge " + e + "\n");
 		for (Circle c : circles)
@@ -268,6 +299,21 @@ public class Data {
 		Arrays.sort(nums);
 		return nums[0];
 	}
-
+	
+	public void clearAll() 
+	{
+		if(nodes != null)
+			nodes.clear();
+		if(edges != null)
+			edges.clear();
+		if(circles != null)
+			circles.clear();
+		if(rectangles != null)
+			rectangles.clear();
+		if(polygons != null)
+			polygons.clear();
+		if(vertices != null)
+			vertices.clear();
+	}
 
 }

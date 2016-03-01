@@ -8,7 +8,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
@@ -43,27 +42,28 @@ public class Window extends JFrame {
 		
 		board = new Board(editor);
 		board.setPreferredSize(new Dimension(800, 800));
-		board.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Tools"));
-		board.setOpaque(true);
-		board.setBackground(Color.WHITE);
+//		board.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Canvas"));
+//		board.setOpaque(true);
+//		board.setBackground(Color.white);
 		
 		toolBox = new ToolBox(editor);
 		toolBox.setFloatable(false);
 		toolBox.setBorder(emptyBorder);
 		
 		box = new Box(editor);
+		box.setSize(new Dimension(170, 80));
 		box.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Tools"));
 
 		text = new TextArea(editor);
 		text.setEditable(false);
-		text.setBorder(emptyBorder);
+//		text.setBorder(emptyBorder);
 
-		JScrollPane scroll = new JScrollPane(text);
+//		JScrollPane scroll = new JScrollPane(text);
 
 		JPanel side = new JPanel();
 		side.setLayout(new BorderLayout());
-		side.add(scroll, BorderLayout.CENTER);
-		side.add(box, BorderLayout.PAGE_END);
+//		side.add(scroll, BorderLayout.CENTER);
+		side.add(box, BorderLayout.PAGE_START);
 
 		message = new JLabel("Hello World");
 		message.setBorder(emptyBorder);
@@ -78,6 +78,7 @@ public class Window extends JFrame {
 		pane.add(side, BorderLayout.LINE_END);
 		pane.add(message, BorderLayout.PAGE_END);
 		
+		setJMenuBar(new MenuBar(editor));
 		this.pack();
 	}
 }

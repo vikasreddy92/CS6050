@@ -8,14 +8,21 @@ public class Circle {
 	int radius;
 	int thickness;
 	Color brushColor;
-	Color fillColor;
+//	Color fillColor;
 	
-	Circle(Vertex center, int radius, int thickness, Color brushColor, Color fillColor) {
+	/*Circle(Vertex center, int radius, int thickness, Color brushColor, Color fillColor) {
 		this.center = center;
 		this.radius = radius;
 		this.thickness = thickness;
 		this.brushColor = brushColor;
 		this.fillColor = fillColor;
+	}*/
+	
+	Circle(Vertex center, int radius, int thickness, Color brushColor) {
+		this.center = center;
+		this.radius = radius;
+		this.thickness = thickness;
+		this.brushColor = brushColor;
 	}
 
 	@Override
@@ -32,7 +39,7 @@ public class Circle {
 	@Override
 	public String toString() {
 		float[] brushColors = getComponents(brushColor);
-		float[] fillColors = getComponents(fillColor);
+//		float[] fillColors = getComponents(fillColor);
 		return brushColors[0] + " " + brushColors[1] + " " + brushColors[2] + " " + thickness + " " + center + " " + radius + " ";
 	}
 	

@@ -10,9 +10,9 @@ public class Rectangle
 	int height;
 	int thickness;
 	Color brushColor;
-	Color fillColor;
+//	Color fillColor;
 
-	public Rectangle(Vertex origin, int width, int height, int thickness, Color brushColor, Color fillColor)
+/*	public Rectangle(Vertex origin, int width, int height, int thickness, Color brushColor, Color fillColor)
 	{
 		this.origin = origin;
 		this.width = width;
@@ -20,8 +20,16 @@ public class Rectangle
 		this.thickness = thickness;
 		this.brushColor = brushColor;
 		this.fillColor = fillColor;
-	}
+	}*/
 	
+	public Rectangle(Vertex origin, int width, int height, int thickness, Color brushColor)
+	{
+		this.origin = origin;
+		this.width = width;
+		this.height = height;
+		this.thickness = thickness;
+		this.brushColor = brushColor;
+	}
 	
 	@Override
 	public int hashCode()
@@ -68,7 +76,33 @@ public class Rectangle
 			return false;
 		return true;
 	}
-
+	
+	@Override 
+	public String toString() {
+		float[] brush = getComponents(brushColor);
+		StringBuffer sb = new StringBuffer();
+		ArrayList<Vertex> vertices = new ArrayList<>();
+		vertices.add(new Vertex(origin.x, origin.y));
+		vertices.add(new Vertex(origin.x + width, origin.y));
+		vertices.add(new Vertex(origin.x + width, origin.y + height));
+		vertices.add(new Vertex(origin.x, origin.y + height));
+		sb.append(brush[0]);
+		sb.append(" ");
+		sb.append(brush[1]);
+		sb.append(" ");
+		sb.append(brush[2]);
+		sb.append(" ");
+		sb.append(thickness);
+		sb.append(" ");
+		sb.append(vertices.get(0));
+		sb.append(" ");
+		for (int i = 0; i < 4 - 1; i++)
+			sb.append(vertices.get(i) + " " + vertices.get(i + 1) + " ");
+		sb.append(vertices.get(4 - 1) + " " + vertices.get(0));
+		return sb.toString();
+	}
+	
+/*
 	@Override
 	public String toString()
 	{
@@ -101,7 +135,7 @@ public class Rectangle
 		sb.append(vertices.get(4 - 1) + " " + vertices.get(0));
 		return sb.toString();
 	}
-
+*/
 	private float[] getComponents(Color color)
 	{
 		float[] colors = new float[3];
