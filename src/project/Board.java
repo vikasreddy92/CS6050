@@ -270,10 +270,9 @@ class Board extends JPanel implements MouseInputListener
 			{
 				editor.data.tempNode = null;
 				movingNode = null;
-
 			}
 		}
-		else if(editor.window.box.mode.equals(editor.window.box.UE))
+		else if(editor.window.box.mode.equals(editor.window.box.UL))
 		{
 			if(editor.data.tempEdge != null)
 			{

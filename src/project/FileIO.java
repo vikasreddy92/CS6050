@@ -55,6 +55,7 @@ public class FileIO
 				int x = Integer.parseInt(st.nextToken());
 				int y = Integer.parseInt(st.nextToken());
 				y = ymax - y;
+				check(x, y);
 				data.append(x + " " + y + " " + rComp + " " + gComp + " " + bComp + " " + line + "\n");
 			}
 			else if (line.equals("edge"))
@@ -69,6 +70,8 @@ public class FileIO
 				int y2 = Integer.parseInt(st.nextToken());
 				y1 = ymax - y1;
 				y2 = ymax - y2;
+				check(x1, y1);
+				check(x2, y2);
 				data.append(x1 + " " + y1 + " " + x2 + " " + y2 + " " + thickness + " " + rComp + " " + gComp + " "
 						+ bComp + " " + line + "\n");
 			}
@@ -87,6 +90,8 @@ public class FileIO
 				int y = Integer.parseInt(st.nextToken());
 				int radius = Integer.parseInt(st.nextToken());
 				y = ymax - y;
+				check(x + radius, y+ radius);
+				check(x - radius, y- radius);
 				data.append(x + " " + y + " " + radius + " " + thickness + " " + rBrushComp + " " + gBrushComp + " "
 						+ bBrushComp + " " + line + "\n");
 			}
@@ -110,8 +115,8 @@ public class FileIO
 					int y2 = Integer.parseInt(st.nextToken());
 					y1 = ymax - y1;
 					y2 = ymax - y2;
-					check(x1 + thickness, y1 + thickness);
-					check(x1 - thickness, y1 - thickness);
+					check(x1, y1);
+					check(x1, y1);
 					data.append(x1 + " " + y1 + " " + x2 + " " + y2 + " " + "lineto" + "\n");
 				}
 				data.append("closepath\n");
@@ -167,6 +172,8 @@ public class FileIO
 					int y2 = Integer.parseInt(st.nextToken());
 					y1 = ymax - y1;
 					y2 = ymax - y2;
+					check(x1, y1);
+					check(x2, y2);
 					data.append(x1 + " " + y1 + " " + x2 + " " + y2 + " " + "lineto" + "\n");
 				}
 				data.append("closepath\n");
