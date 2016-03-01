@@ -345,12 +345,9 @@ public class FileIO
 		for (Node n : editor.data.nodes)
 		{
 			check(n.x, n.y);
-			check(n.x, n.y);
 		}
 		for (Edge e : editor.data.edges)
 		{
-			check(e.u.x, e.u.y);
-			check(e.v.x, e.v.y);
 			check(e.u.x, e.u.y);
 			check(e.v.x, e.v.y);
 		}

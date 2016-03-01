@@ -263,6 +263,46 @@ class Board extends JPanel implements MouseInputListener
 		else if (editor.window.box.mode.equals(editor.window.box.RP))
 		{
 			editor.data.removePolygon(x, y);
+		} 
+		else if(editor.window.box.mode.equals(editor.window.box.UN))
+		{
+			if(editor.data.tempNode != null || movingNode != null)
+			{
+				editor.data.tempNode = null;
+				movingNode = null;
+
+			}
+		}
+		else if(editor.window.box.mode.equals(editor.window.box.UE))
+		{
+			if(editor.data.tempEdge != null)
+			{
+				editor.data.tempEdge = null;
+			}
+		}
+		else if(editor.window.box.mode.equals(editor.window.box.UC))
+		{
+			if(editor.data.tempCircle != null || movingCircle != null)
+			{
+				movingCircle = null;
+				editor.data.tempCircle = null;
+			}
+		}
+		else if(editor.window.box.mode.equals(editor.window.box.UR))
+		{
+			if(editor.data.tempRectangle != null || movingRectangle != null)
+			{
+				movingRectangle = null;
+				editor.data.tempRectangle = null;
+			}
+		}
+		else if(editor.window.box.mode.equals(editor.window.box.UP))
+		{
+			if(editor.data.tempPolygon != null)
+			{
+				movingRectangle = null;
+				editor.data.tempPolygon = null;
+			}
 		}
 		editor.refresh();
 	}

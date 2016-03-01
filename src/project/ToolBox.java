@@ -159,6 +159,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.add(editor.window.box.an);
 			editor.window.box.add(editor.window.box.mn);
 			editor.window.box.add(editor.window.box.rn);
+			editor.window.box.add(editor.window.box.un);
 			break;
 		case LINE:
 			editor.window.box.removeAll();
@@ -166,6 +167,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.mode = editor.window.box.AL;
 			editor.window.box.add(editor.window.box.al);
 			editor.window.box.add(editor.window.box.rl);
+			editor.window.box.add(editor.window.box.ul);
 			break;
 		case CIRCLE:
 			editor.window.box.removeAll();
@@ -174,6 +176,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.add(editor.window.box.ac);
 			editor.window.box.add(editor.window.box.mc);
 			editor.window.box.add(editor.window.box.rc);
+			editor.window.box.add(editor.window.box.uc);
 			break;
 		case RECTANGLE:
 			editor.window.box.removeAll();
@@ -182,6 +185,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.add(editor.window.box.ar);
 			editor.window.box.add(editor.window.box.mr);
 			editor.window.box.add(editor.window.box.rr);
+			editor.window.box.add(editor.window.box.ur);
 			break;
 		case POLYGON:
 			editor.window.box.removeAll();
@@ -189,6 +193,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.mode = editor.window.box.AP;
 			editor.window.box.add(editor.window.box.ap);
 			editor.window.box.add(editor.window.box.rp);
+			editor.window.box.add(editor.window.box.up);
 			break;
 		case BRUSH_SIZE:
 			JComboBox<?> cb = (JComboBox<?>)e.getSource();
