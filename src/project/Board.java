@@ -25,7 +25,7 @@ class Board extends JPanel implements MouseInputListener
 	private static Color fillColor = Color.WHITE;
 
 	Editor editor;
-	
+
 	Node movingNode;
 	Circle movingCircle;
 	Rectangle movingRectangle;
@@ -36,7 +36,8 @@ class Board extends JPanel implements MouseInputListener
 		this.editor = editor;
 		AffineTransform at = new AffineTransform();
 		at.translate(0, 800);
-		super.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Canvas"));
+		super.setBorder(
+				BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Canvas"));
 		addMouseListener(this);
 		addMouseMotionListener(this);
 	}
@@ -172,10 +173,8 @@ class Board extends JPanel implements MouseInputListener
 
 	public void mousePressed(MouseEvent e)
 	{
-
 		int x = e.getX();
 		int y = e.getY();
-
 		if (editor.window.box.mode.equals(editor.window.box.AN))
 		{
 			editor.data.add(new Node(x, y, brushColor));
@@ -185,8 +184,8 @@ class Board extends JPanel implements MouseInputListener
 			movingNode = editor.data.moveNode(x, y);
 			if (movingNode != null)
 			{
-				sX = movingNode.x;
-				sY = movingNode.y;
+				editor.data.nodes.remove(movingNode);
+				editor.data.nodes.add(new Node(x, y, movingNode.brushColor));
 			}
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.RN))

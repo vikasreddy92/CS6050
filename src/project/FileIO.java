@@ -178,7 +178,7 @@ public class FileIO
 		}
 		sb.append("%!PS-Adobe-3.0 EPSF-3.0\n");
 		sb.append("%%BoundingBox: " + (xmin - BORDER) + " " + (ymin - BORDER) + " " + (xmax + BORDER) + " " + (ymax + BORDER) + "\n");
-		sb.append("/node { setrgbcolor newpath 5 0 360 arc fill } def\n");
+		sb.append("/node { setrgbcolor newpath 15 0 360 arc fill } def\n");
 		sb.append("/edge { setrgbcolor setlinewidth newpath moveto lineto stroke } def\n");
 		sb.append("/circle { setrgbcolor setlinewidth newpath 0 360 arc stroke } def\n");
 		sb.append("/rectangle { setrgbcolor setlinewidth newpath rectstroke } def\n");
@@ -220,7 +220,15 @@ public class FileIO
 				StringTokenizer st = new StringTokenizer(str);
 				if(str.endsWith("node"))
 				{
-					
+					System.out.println("Creating node!");
+					int x = Integer.parseInt(st.nextToken());
+					int y = Integer.parseInt(st.nextToken());
+					y = ymax - y;
+					float redComp = Float.parseFloat(st.nextToken());
+					float greenComp = Float.parseFloat(st.nextToken());
+					float blueComp = Float.parseFloat(st.nextToken());
+					Color color = new Color(redComp, greenComp, blueComp);
+					editor.data.add(new Node(x, y, color));
 				}
 				if (str.endsWith("edge"))
 				{
@@ -336,8 +344,8 @@ public class FileIO
 	{
 		for (Node n : editor.data.nodes)
 		{
-			check(n.x + 20, n.y + 20);
-			check(n.x - 20, n.y - 20);
+			check(n.x, n.y);
+			check(n.x, n.y);
 		}
 		for (Edge e : editor.data.edges)
 		{
@@ -348,8 +356,6 @@ public class FileIO
 		}
 		for (Circle c : editor.data.circles)
 		{
-			System.out.println((c.center.x + c.radius) +", " + (c.center.y + c.radius));
-			System.out.println((c.center.x - c.radius) +", " + (c.center.y - c.radius));
 			check((c.center.x + c.radius), (c.center.y + c.radius));
 			check((c.center.x - c.radius), (c.center.y - c.radius));
 		}
