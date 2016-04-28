@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridLayout;
+
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,6 +26,9 @@ public class Window extends JFrame {
 	public TextArea text;
 	public Box box;
 	public ToolBox toolBox;
+	public ObjectProperties objectProps;
+	public TextBoxComponent textBoxComponent;
+	public Algorithms algorithms;
 	public JLabel message;
 	
 	Window(Editor editor) {
@@ -38,32 +43,47 @@ public class Window extends JFrame {
 		}
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		Border emptyBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-		
-		board = new Board(editor);
-		board.setPreferredSize(new Dimension(800, 800));
-//		board.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Canvas"));
-//		board.setOpaque(true);
-//		board.setBackground(Color.white);
+		Border emptyBorder = BorderFactory.createEmptyBorder(8, 8, 8, 8);
 		
 		toolBox = new ToolBox(editor);
 		toolBox.setFloatable(false);
 		toolBox.setBorder(emptyBorder);
 		
+		board = new Board(editor);
+		board.setPreferredSize(new Dimension(923, 1474));
+//		System.out.println("Window.java H:" + this.getHeight() + ", W: " + this.getWidth());
+		board.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
+		board.setOpaque(true);
+		board.setBackground(Color.white);
+		board.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		
+		
 		box = new Box(editor);
-		box.setSize(new Dimension(170, 80));
-		box.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Tools"));
+		box.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Options"));
+		
+		algorithms = new Algorithms(editor);
+		algorithms.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Algorithms"));
 
+		objectProps = new ObjectProperties(editor);
+		objectProps.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Properties"));
+		
+		textBoxComponent = new TextBoxComponent(editor);
+		textBoxComponent.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Text"));
+		
 		text = new TextArea(editor);
 		text.setEditable(false);
-//		text.setBorder(emptyBorder);
-
-//		JScrollPane scroll = new JScrollPane(text);
-
+		text.setBorder(emptyBorder);
+		
 		JPanel side = new JPanel();
 		side.setLayout(new BorderLayout());
-//		side.add(scroll, BorderLayout.CENTER);
-		side.add(box, BorderLayout.PAGE_START);
+//		side.add(box, BorderLayout.PAGE_START);
+//		side.add(textBoxComponent, BorderLayout.CENTER);
+//		side.add(algorithms, BorderLayout.PAGE_END);
+		side.setLayout(new GridLayout(4, 1));
+		side.add(box);
+		side.add(objectProps);
+		side.add(textBoxComponent);
+		side.add(algorithms);
 
 		message = new JLabel("Hello World");
 		message.setBorder(emptyBorder);
@@ -71,7 +91,7 @@ public class Window extends JFrame {
 		message.setBackground(Color.LIGHT_GRAY);
 		
 		Container pane = getContentPane();
-
+		
 		pane.setLayout(new BorderLayout());
 		pane.add(toolBox, BorderLayout.PAGE_START);
 		pane.add(board, BorderLayout.CENTER);
@@ -79,6 +99,6 @@ public class Window extends JFrame {
 		pane.add(message, BorderLayout.PAGE_END);
 		
 		setJMenuBar(new MenuBar(editor));
-		this.pack();
+//		this.pack();
 	}
 }

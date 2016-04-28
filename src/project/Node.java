@@ -5,6 +5,35 @@ import java.awt.Color;
 public class Node {
 
 	int x, y;
+	public int getX()
+	{
+		return x;
+	}
+
+	public void setX(int x)
+	{
+		this.x = x;
+	}
+
+	public int getY()
+	{
+		return y;
+	}
+
+	public void setY(int y)
+	{
+		this.y = y;
+	}
+
+	public Color getBrushColor()
+	{
+		return brushColor;
+	}
+
+	public void setBrushColor(Color brushColor)
+	{
+		this.brushColor = brushColor;
+	}
 	Color brushColor;
 
 	Node(int x, int y, Color color) {
@@ -50,16 +79,22 @@ public class Node {
 
 	@Override
 	public String toString() {
-		float[] brush = getComponents(brushColor);
-		return brush[0] + " " + brush[1] + " " + brush[2] + " " + x + " " + y;
+		return this.x + " " + this.y + " " + toString(this.brushColor);
 	}
-	private float[] getComponents(Color color)
+	
+	private String toString(Color color)
 	{
-		float[] colors = new float[3];
-		float MAX_COLOR = 255f;
-		colors[0] = ((float) color.getRed()) / MAX_COLOR;
-		colors[1] = ((float) color.getGreen()) / MAX_COLOR;
-		colors[2] = ((float) color.getBlue()) / MAX_COLOR;
-		return colors;
+		int[] comp = getComponents(color);
+		return comp[0] + " " + comp[1] + " " + comp[2] + " " + comp[3];
+	}
+	
+	private int[] getComponents(Color color)
+	{
+		int[] comp = new int[4];
+		comp[0] = color.getRed();
+		comp[1] = color.getGreen();
+		comp[2] = color.getBlue();
+		comp[3] = color.getAlpha();
+		return comp;
 	}
 }

@@ -10,18 +10,89 @@ public class Rectangle
 	int height;
 	int thickness;
 	Color brushColor;
-//	Color fillColor;
+	Color fillColor;
 
-/*	public Rectangle(Vertex origin, int width, int height, int thickness, Color brushColor, Color fillColor)
+	public Rectangle(Vertex origin, int width, int height, int thickness, Color brushColor, Color fillColor)
+	{
+		if (check(origin))
+		{
+			this.origin = origin;
+			this.width = width;
+			this.height = height;
+			this.thickness = thickness;
+			this.brushColor = brushColor;
+			this.fillColor = fillColor;
+		}
+	}
+
+	private boolean check(Vertex origin2)
+	{
+		if (origin2.x == Integer.MIN_VALUE || origin2.y == Integer.MIN_VALUE || origin2.x == Integer.MAX_VALUE
+				|| origin2.y == Integer.MAX_VALUE)
+			return false;
+		return true;
+	}
+
+	public Vertex getOrigin()
+	{
+		return origin;
+	}
+
+	public void setOrigin(Vertex origin)
 	{
 		this.origin = origin;
+	}
+
+	public int getWidth()
+	{
+		return width;
+	}
+
+	public void setWidth(int width)
+	{
 		this.width = width;
+	}
+
+	public int getHeight()
+	{
+		return height;
+	}
+
+	public void setHeight(int height)
+	{
 		this.height = height;
+	}
+
+	public int getThickness()
+	{
+		return thickness;
+	}
+
+	public void setThickness(int thickness)
+	{
 		this.thickness = thickness;
+	}
+
+	public Color getBrushColor()
+	{
+		return brushColor;
+	}
+
+	public void setBrushColor(Color brushColor)
+	{
 		this.brushColor = brushColor;
+	}
+
+	public Color getFillColor()
+	{
+		return fillColor;
+	}
+
+	public void setFillColor(Color fillColor)
+	{
 		this.fillColor = fillColor;
-	}*/
-	
+	}
+
 	public Rectangle(Vertex origin, int width, int height, int thickness, Color brushColor)
 	{
 		this.origin = origin;
@@ -30,7 +101,7 @@ public class Rectangle
 		this.thickness = thickness;
 		this.brushColor = brushColor;
 	}
-	
+
 	@Override
 	public int hashCode()
 	{
@@ -76,73 +147,37 @@ public class Rectangle
 			return false;
 		return true;
 	}
-	
-	@Override 
-	public String toString() {
-		float[] brush = getComponents(brushColor);
-		StringBuffer sb = new StringBuffer();
+
+	public ArrayList<Vertex> getAllVertices()
+	{
 		ArrayList<Vertex> vertices = new ArrayList<>();
 		vertices.add(new Vertex(origin.x, origin.y));
 		vertices.add(new Vertex(origin.x + width, origin.y));
 		vertices.add(new Vertex(origin.x + width, origin.y + height));
 		vertices.add(new Vertex(origin.x, origin.y + height));
-		sb.append(brush[0]);
-		sb.append(" ");
-		sb.append(brush[1]);
-		sb.append(" ");
-		sb.append(brush[2]);
-		sb.append(" ");
-		sb.append(thickness);
-		sb.append(" ");
-		sb.append(vertices.get(0));
-		sb.append(" ");
-		for (int i = 0; i < 4 - 1; i++)
-			sb.append(vertices.get(i) + " " + vertices.get(i + 1) + " ");
-		sb.append(vertices.get(4 - 1) + " " + vertices.get(0));
-		return sb.toString();
+		return vertices;
 	}
-	
-/*
+
 	@Override
 	public String toString()
 	{
-		float[] brush = getComponents(brushColor);
-		float[] fill = getComponents(fillColor);
-		StringBuffer sb = new StringBuffer();
-		ArrayList<Vertex> vertices = new ArrayList<>();
-		vertices.add(new Vertex(origin.x, origin.y));
-		vertices.add(new Vertex(origin.x + width, origin.y));
-		vertices.add(new Vertex(origin.x + width, origin.y + height));
-		vertices.add(new Vertex(origin.x, origin.y + height));
-		sb.append(brush[0]);
-		sb.append(" ");
-		sb.append(brush[1]);
-		sb.append(" ");
-		sb.append(brush[2]);
-		sb.append(" ");
-		sb.append(fill[0]);
-		sb.append(" ");
-		sb.append(fill[1]);
-		sb.append(" ");
-		sb.append(fill[2]);
-		sb.append(" ");
-		sb.append(thickness);
-		sb.append(" ");
-		sb.append(vertices.get(0));
-		sb.append(" ");
-		for (int i = 0; i < 4 - 1; i++)
-			sb.append(vertices.get(i) + " " + vertices.get(i + 1) + " ");
-		sb.append(vertices.get(4 - 1) + " " + vertices.get(0));
-		return sb.toString();
+		return origin + " " + width + " " + height + " " + thickness + " " + toString(brushColor) + " "
+				+ toString(fillColor);
 	}
-*/
-	private float[] getComponents(Color color)
+
+	private String toString(Color color)
 	{
-		float[] colors = new float[3];
-		float MAX_COLOR = 255f;
-		colors[0] = ((float) color.getRed()) / MAX_COLOR;
-		colors[1] = ((float) color.getGreen()) / MAX_COLOR;
-		colors[2] = ((float) color.getBlue()) / MAX_COLOR;
-		return colors;
+		int[] comp = getComponents(color);
+		return comp[0] + " " + comp[1] + " " + comp[2] + " " + comp[3];
+	}
+
+	private int[] getComponents(Color color)
+	{
+		int[] comp = new int[4];
+		comp[0] = color.getRed();
+		comp[1] = color.getGreen();
+		comp[2] = color.getBlue();
+		comp[3] = color.getAlpha();
+		return comp;
 	}
 }

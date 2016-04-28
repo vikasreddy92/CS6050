@@ -65,12 +65,12 @@ public class MenuBar extends JMenuBar implements ActionListener
 		}
 		else if (action.equals(IMPORT))
 		{
-			JFileChooser fileChooser = new JFileChooser();
+			JFileChooser fileChooser = new JFileChooser("C:/Users/vikas/Desktop/Exports/");
 			fileChooser.setFileFilter(new FileNameExtensionFilter("Encapsulated PostScript File Format", "eps"));
 			int rVal = fileChooser.showOpenDialog(this);
 			if(rVal == JFileChooser.APPROVE_OPTION) {
 				String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-				FileIO fio = new FileIO(editor);
+				FileIO2 fio = new FileIO2(editor);
 				System.out.println("Importing... " + filePath);
 				fio.importToEditor(filePath);
 				editor.refresh();
@@ -78,15 +78,15 @@ public class MenuBar extends JMenuBar implements ActionListener
 		}
 		else if (action.equals(EXPORT))
 		{
-			JFileChooser fileChooser = new JFileChooser();
+			JFileChooser fileChooser = new JFileChooser("C:/Users/vikas/Desktop/Exports/");
 			fileChooser.setFileFilter(new FileNameExtensionFilter("Encapsulated PostScript File Format", "eps"));
 			int rVal = fileChooser.showSaveDialog(this);
 			if (rVal == JFileChooser.APPROVE_OPTION) {
 				String filePath = fileChooser.getSelectedFile().getAbsolutePath();
 				if (!filePath.endsWith(".eps"))
 					filePath = filePath + ".eps";
-				FileIO fio = new FileIO(editor);
-				fio.export(editor.window.text.getText(), filePath);
+				FileIO2 fio = new FileIO2(editor);
+				fio.exportToEPS(filePath);
 			} else if (rVal == JFileChooser.CANCEL_OPTION) {
 				//throw an alert?
 			}

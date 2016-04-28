@@ -151,12 +151,14 @@ public class ToolBox extends JToolBar implements ActionListener {
 
 		editor.window.box.validate();
 		editor.window.box.revalidate();
+		
 		switch (action) {
 		case NODE:
 			editor.window.box.removeAll();
 			editor.window.box.an.setSelected(true);
 			editor.window.box.mode = editor.window.box.AN;
 			editor.window.box.add(editor.window.box.an);
+			editor.window.box.add(editor.window.box.sn);
 			editor.window.box.add(editor.window.box.mn);
 			editor.window.box.add(editor.window.box.rn);
 			editor.window.box.add(editor.window.box.un);
@@ -166,6 +168,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.al.setSelected(true);
 			editor.window.box.mode = editor.window.box.AL;
 			editor.window.box.add(editor.window.box.al);
+			editor.window.box.add(editor.window.box.sl);
 			editor.window.box.add(editor.window.box.rl);
 			editor.window.box.add(editor.window.box.ul);
 			break;
@@ -174,6 +177,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.ac.setSelected(true);
 			editor.window.box.mode = editor.window.box.AC;
 			editor.window.box.add(editor.window.box.ac);
+			editor.window.box.add(editor.window.box.sc);
 			editor.window.box.add(editor.window.box.mc);
 			editor.window.box.add(editor.window.box.rc);
 			editor.window.box.add(editor.window.box.uc);
@@ -183,6 +187,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.ar.setSelected(true);
 			editor.window.box.mode = editor.window.box.AR;
 			editor.window.box.add(editor.window.box.ar);
+			editor.window.box.add(editor.window.box.sr);
 			editor.window.box.add(editor.window.box.mr);
 			editor.window.box.add(editor.window.box.rr);
 			editor.window.box.add(editor.window.box.ur);
@@ -192,6 +197,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			editor.window.box.ap.setSelected(true);
 			editor.window.box.mode = editor.window.box.AP;
 			editor.window.box.add(editor.window.box.ap);
+			editor.window.box.add(editor.window.box.sp);
 			editor.window.box.add(editor.window.box.rp);
 			editor.window.box.add(editor.window.box.up);
 			break;
@@ -203,7 +209,7 @@ public class ToolBox extends JToolBar implements ActionListener {
 			Color color = JColorChooser.showDialog(this, "Pen color", Color.BLACK);
 			if(color != null) {
 				editor.window.board.setBrushColor(color);
-				System.out.println("Brush color changed to: " + editor.window.board.getBrushColor().toString());
+				System.out.println("Brush color changed to: " + editor.window.board.getBrushColor().toString() + "\tAlpha: " + color.getAlpha());
 			}
 			break;
 		case FILL_COLOR:

@@ -2,15 +2,13 @@ package project;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
-
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
 class Board extends JPanel implements MouseInputListener
@@ -20,50 +18,92 @@ class Board extends JPanel implements MouseInputListener
 	private static int sX = Integer.MIN_VALUE, sY = Integer.MIN_VALUE, currX = Integer.MIN_VALUE,
 			currY = Integer.MIN_VALUE;
 	private static boolean dragging = false, moving = false;
-	private static int brushSize = 1;
+	private static int brushSize = 2;
 	private static Color brushColor = Color.BLACK;
 	private static Color fillColor = Color.WHITE;
+
+	public boolean convexHull = false;
+	public boolean voronoiDiagram = false;
+	public static boolean textField = false;
 
 	Editor editor;
 
 	Node movingNode;
+	Edge movingEdge;
 	Circle movingCircle;
 	Rectangle movingRectangle;
+	Polygon movingPolygon;
+
 	ArrayList<Vertex> polygonVertices;
 
 	Board(Editor editor)
 	{
 		this.editor = editor;
-		AffineTransform at = new AffineTransform();
-		at.translate(0, 800);
-		super.setBorder(
-				BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED), "Canvas"));
 		addMouseListener(this);
 		addMouseMotionListener(this);
 	}
 
 	public void paint(Graphics g)
 	{
+		g.setColor(Color.WHITE);
+		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D) g;
 
+		for (TextBox t : editor.data.textBoxes)
+			drawText(t, g2d);
 		for (Polygon p1 : editor.data.polygons)
 			drawPolygon(p1, g2d);
-
+		for (Circle c : editor.data.circles)
+			drawCircle(c, g);
+		for (Rectangle r1 : editor.data.rectangles)
+			drawRectangle(r1, g2d);
 		for (Node n : editor.data.nodes)
 			drawNode(n, g2d);
-
 		for (Edge e : editor.data.edges)
 			drawEdge(e, g2d);
 
-		for (Circle c : editor.data.circles)
-			drawCircle(c, g);
-
-		for (Rectangle r1 : editor.data.rectangles)
-			drawRectangle(r1, g2d);
-
-		if (editor.window.box.mode.equals(editor.window.box.AC))
+		if (convexHull && editor.data.convexHull != null)
 		{
-			int radius = Math.abs(currX - sX);
+			int size = editor.data.convexHull.length;
+			g2d.setStroke(new BasicStroke(2));
+			g2d.setColor(Color.RED);
+			if (size > 2)
+			{
+				Vertex[] hull = editor.data.convexHull;
+				for (int i = 1; i < size; i++)
+					g2d.drawLine(hull[i - 1].x, hull[i - 1].y, hull[i].x, hull[i].y);
+				g2d.drawLine(hull[size - 1].x, hull[size - 1].y, hull[0].x, hull[0].y);
+			}
+			g2d.setStroke(new BasicStroke(brushSize));
+			g2d.setColor(brushColor);
+		}
+		if (voronoiDiagram && editor.data.voronoiDiagram != null && !editor.data.voronoiDiagram.isEmpty())
+		{
+			for (VoronoiCell v : editor.data.voronoiDiagram)
+			{
+				g2d.setColor(v.color);
+				for (Vertex u : v.vertices)
+					g2d.fillRect(u.x, u.y, 1, 1);
+			}
+			g2d.setColor(Color.BLACK);
+			for (Node n : editor.data.nodes)
+				drawNode(n, g2d);
+			g2d.setColor(brushColor);
+		}
+
+		if (editor.window.box.mode.equals(editor.window.box.MN))
+		{
+			if (dragging && movingNode != null)
+			{
+				g2d.setColor(movingNode.brushColor);
+//				System.out.println("paint() - MN: " + currX + ", " + currY);
+				g2d.fillOval(currX, currY, 20, 20);
+			}
+			g2d.setColor(brushColor);
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AC))
+		{
+			int radius = getRadius(currX, currY, sX, sY);
 			drawCircle(sX, sY, radius, brushColor, brushSize, g);
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.MC))
@@ -86,7 +126,14 @@ class Board extends JPanel implements MouseInputListener
 		else if (editor.window.box.mode.equals(editor.window.box.MR))
 		{
 			if (dragging)
-				g.drawRect(currX, currY, movingRectangle.width, movingRectangle.height);
+			{
+				g2d.setColor(movingRectangle.brushColor);
+				g2d.setStroke(new BasicStroke(movingRectangle.thickness));
+				g2d.drawRect(movingRectangle.origin.x + (currX - sX), movingRectangle.origin.y + (currY - sY),
+						movingRectangle.width, movingRectangle.height);
+			}
+			g2d.setColor(brushColor);
+			g2d.setStroke(new BasicStroke(brushSize));
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.AP))
 		{
@@ -94,18 +141,28 @@ class Board extends JPanel implements MouseInputListener
 			{
 				int n = polygonVertices.size();
 				for (int i = 0; i < n - 1; i++)
-					drawEdge(new Edge(polygonVertices.get(i), polygonVertices.get(i + 1), brushSize, brushColor), g2d);
+					drawEdge(new Edge(polygonVertices.get(i), polygonVertices.get(i + 1), brushSize,
+							brushColor), g2d);
 			}
 			if (moving)
 			{
+				g2d.setColor(brushColor);
 				g2d.setStroke(new BasicStroke(brushSize));
 				g2d.drawLine(sX, sY, currX, currY);
 			}
 		}
 	}
 
+	private int getRadius(int currX2, int currY2, int sX2, int sY2)
+	{
+		if (Math.abs(currX2 - sX2) < 10 || Math.abs(currY2 - sY2) < 10)
+			return 0;
+		return (int) Math.sqrt((double) ((currX2 - sX2) * (currX2 - sX2) + (currY2 - sY2) * (currY2 - sY2)));
+	}
+
 	public void mouseClicked(MouseEvent e)
 	{
+		System.out.println("Board.java: " + editor.window.box.mode);
 	}
 
 	public void mouseMoved(MouseEvent e)
@@ -134,7 +191,15 @@ class Board extends JPanel implements MouseInputListener
 	public void mouseDragged(MouseEvent e)
 	{
 		dragging = true;
-		if (editor.window.box.mode.equals(editor.window.box.AC))
+		if (editor.window.box.mode.equals(editor.window.box.MN))
+		{
+			if (movingNode != null)
+			{
+				currX = e.getX();
+				currY = e.getY();
+			}
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AC))
 		{
 			currX = e.getX();
 			currY = e.getY();
@@ -175,17 +240,47 @@ class Board extends JPanel implements MouseInputListener
 	{
 		int x = e.getX();
 		int y = e.getY();
-		if (editor.window.box.mode.equals(editor.window.box.AN))
+		System.out.println("Board.java: " + editor.window.box.mode + ", isRightClick: "
+				+ SwingUtilities.isRightMouseButton(e));
+		if (SwingUtilities.isRightMouseButton(e))
+		{
+			movingNode = null;
+			movingCircle = null;
+			movingRectangle = null;
+			editor.data.tempNode = null;
+			editor.data.tempEdge = null;
+			editor.data.tempCircle = null;
+			editor.data.tempRectangle = null;
+			editor.data.tempPolygon = null;
+		}
+		else if (textField)
+		{
+			TextBox temp = editor.window.textBoxComponent.getTextBox();
+			temp.setTextLocation(new Vertex(x, y));
+			editor.data.textBoxes.add(temp);
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			textField = false;
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AN))
 		{
 			editor.data.add(new Node(x, y, brushColor));
+			if (voronoiDiagram)
+				VoronoiDiagram.updateVoronoiDiagram(new Node(x, y, brushColor));
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.SN))
+		{
+			movingNode = editor.data.moveNode(x, y);
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.MN))
 		{
 			movingNode = editor.data.moveNode(x, y);
 			if (movingNode != null)
 			{
-				editor.data.nodes.remove(movingNode);
-				editor.data.nodes.add(new Node(x, y, movingNode.brushColor));
+				System.out.println("Moving node: " + movingNode);
+				sX = movingNode.x;
+				sY = movingNode.y;
+				currX = x;
+				currY = y;
 			}
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.RN))
@@ -194,8 +289,12 @@ class Board extends JPanel implements MouseInputListener
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.AC))
 		{
-			sX = x;
-			sY = y;
+			currX = sX = x;
+			currY = sY = y;
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.SC))
+		{
+			movingCircle = editor.data.moveCircle(x, y);
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.MC))
 		{
@@ -217,15 +316,18 @@ class Board extends JPanel implements MouseInputListener
 			currX = sX = x;
 			currY = sY = y;
 		}
+		else if (editor.window.box.mode.equals(editor.window.box.SR))
+		{
+			movingRectangle = editor.data.moveRectangle(x, y);
+		}
 		else if (editor.window.box.mode.equals(editor.window.box.MR))
 		{
 			movingRectangle = editor.data.moveRectangle(x, y);
 			if (movingRectangle != null)
 			{
-				currX = x - movingRectangle.origin.x;
-				currY = y - movingRectangle.origin.y;
+				currX = sX = x;
+				currY = sY = y;
 				brushSize = movingRectangle.thickness;
-				// fillColor = movingRectangle.fillColor;
 			}
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.RR))
@@ -234,8 +336,8 @@ class Board extends JPanel implements MouseInputListener
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.AL))
 		{
-			sX = x;
-			sY = y;
+			currX = sX = x;
+			currY = sY = y;
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.RL))
 		{
@@ -263,41 +365,41 @@ class Board extends JPanel implements MouseInputListener
 		else if (editor.window.box.mode.equals(editor.window.box.RP))
 		{
 			editor.data.removePolygon(x, y);
-		} 
-		else if(editor.window.box.mode.equals(editor.window.box.UN))
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.UN))
 		{
-			if(editor.data.tempNode != null || movingNode != null)
+			if (editor.data.tempNode != null || movingNode != null)
 			{
 				editor.data.tempNode = null;
 				movingNode = null;
 			}
 		}
-		else if(editor.window.box.mode.equals(editor.window.box.UL))
+		else if (editor.window.box.mode.equals(editor.window.box.UL))
 		{
-			if(editor.data.tempEdge != null)
+			if (editor.data.tempEdge != null)
 			{
 				editor.data.tempEdge = null;
 			}
 		}
-		else if(editor.window.box.mode.equals(editor.window.box.UC))
+		else if (editor.window.box.mode.equals(editor.window.box.UC))
 		{
-			if(editor.data.tempCircle != null || movingCircle != null)
+			if (editor.data.tempCircle != null || movingCircle != null)
 			{
 				movingCircle = null;
 				editor.data.tempCircle = null;
 			}
 		}
-		else if(editor.window.box.mode.equals(editor.window.box.UR))
+		else if (editor.window.box.mode.equals(editor.window.box.UR))
 		{
-			if(editor.data.tempRectangle != null || movingRectangle != null)
+			if (editor.data.tempRectangle != null || movingRectangle != null)
 			{
 				movingRectangle = null;
 				editor.data.tempRectangle = null;
 			}
 		}
-		else if(editor.window.box.mode.equals(editor.window.box.UP))
+		else if (editor.window.box.mode.equals(editor.window.box.UP))
 		{
-			if(editor.data.tempPolygon != null)
+			if (editor.data.tempPolygon != null)
 			{
 				movingRectangle = null;
 				editor.data.tempPolygon = null;
@@ -309,19 +411,34 @@ class Board extends JPanel implements MouseInputListener
 	public void mouseReleased(MouseEvent e)
 	{
 		dragging = false;
-		if (editor.window.box.mode.equals(editor.window.box.AC))
+		if (textField)
 		{
-			int radius = Math.abs(sX - currX);
-			editor.data.add(new Circle(new Vertex(sX, sY), radius, brushSize, brushColor));
+			System.out.println("Board.java: MR textField - " + textField);
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.MN))
+		{
+			if (movingNode != null)
+			{
+				editor.data.add(new Node(currX, currY, movingNode.brushColor));
+				editor.data.vertices.remove(movingNode);
+				editor.data.nodes.remove(movingNode);
+			}
+		}
+		else if (editor.window.box.mode.equals(editor.window.box.AC))
+		{
+			int radius = getRadius(currX, currY, sX, sY);
+			if (radius != 0)
+				editor.data.add(new Circle(new Vertex(sX, sY), radius, brushSize, brushColor, fillColor));
 			currX = sX = Integer.MIN_VALUE;
 			currY = sY = Integer.MIN_VALUE;
+
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.MC))
 		{
 			if (movingCircle != null)
 			{
 				editor.data.add(new Circle(new Vertex(sX, sY), movingCircle.radius, movingCircle.thickness,
-						movingCircle.brushColor));
+						movingCircle.brushColor, movingCircle.fillColor));
 				editor.data.circles.remove(movingCircle);
 			}
 			currX = sX = Integer.MIN_VALUE;
@@ -329,26 +446,38 @@ class Board extends JPanel implements MouseInputListener
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.AR))
 		{
-			editor.data.add(getReactangle(sX, sY, currX, currY, brushSize, brushColor, fillColor));
-			currX = sX = Integer.MIN_VALUE;
-			currY = sY = Integer.MIN_VALUE;
+			if (sX != currX && sY != currY)
+			{
+				editor.data.add(getReactangle(sX, sY, currX, currY, brushSize, brushColor, fillColor));
+			}
+				currX = sX = Integer.MIN_VALUE;
+				currY = sY = Integer.MIN_VALUE;
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.MR))
 		{
-			if (movingRectangle != null)
+			// System.out.println("Board.java:MR: " + currX + ", " + currY + " -- " + sX + ", " + sY);
+			if (movingRectangle != null && !(currX == sX && currY == sY))
 			{
-				editor.data.add(new Rectangle(new Vertex(currX, currY), movingRectangle.width, movingRectangle.height,
-						movingRectangle.thickness, movingRectangle.brushColor));
+				editor.data.add(new Rectangle(
+						new Vertex(movingRectangle.origin.x + (currX - sX),
+								movingRectangle.origin.y + (currY - sY)),
+						movingRectangle.width, movingRectangle.height, movingRectangle.thickness,
+						movingRectangle.brushColor, movingRectangle.fillColor));
+				editor.data.vertices.remove(movingRectangle);
 				editor.data.rectangles.remove(movingRectangle);
 			}
-			currX = sX = Integer.MIN_VALUE;
-			currY = sY = Integer.MIN_VALUE;
+			// currX = sX = Integer.MIN_VALUE;
+			// currY = sY = Integer.MIN_VALUE;
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.AL))
 		{
-			editor.data.add(new Edge(new Vertex(sX, sY), new Vertex(currX, currY), brushSize, brushColor));
-			currX = sX = Integer.MIN_VALUE;
-			currY = sY = Integer.MIN_VALUE;
+			if (sX != currX && sY != currY)
+			{
+				editor.data
+						.add(new Edge(new Vertex(sX, sY), new Vertex(currX, currY), brushSize, brushColor));
+			}
+				currX = sX = Integer.MIN_VALUE;
+				currY = sY = Integer.MIN_VALUE;
 		}
 		else if (editor.window.box.mode.equals(editor.window.box.AP))
 		{
@@ -365,6 +494,15 @@ class Board extends JPanel implements MouseInputListener
 		editor.refresh();
 	}
 
+	private void drawText(TextBox t, Graphics2D g2d)
+	{
+		g2d.setColor(t.getTextColor());
+		g2d.setStroke(new BasicStroke(t.getTextSize()));
+		g2d.setFont(t.getTextFont());
+		g2d.drawString(t.text, t.textLocation.x, t.textLocation.y);
+		g2d.setColor(brushColor);
+	}
+
 	public void drawCircle(Circle c, Graphics g)
 	{
 		Graphics2D g2d = (Graphics2D) g;
@@ -375,29 +513,30 @@ class Board extends JPanel implements MouseInputListener
 		if (c != editor.data.tempCircle)
 		{
 			g2d.setColor(c.brushColor);
+			g2d.setStroke(new BasicStroke(c.thickness));
+			g2d.fillOval(x - r, y - r, r * 2, r * 2);
+			g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
+
+			radius = radius - c.thickness / 2;
+			g2d.setColor(c.fillColor);
+			g2d.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+
+			g2d.setColor(brushColor);
+		}
+		else
+		{
+			radius += 3;
 			g2d.setColor(c.brushColor);
 			g2d.setStroke(new BasicStroke(c.thickness));
 			g2d.fillOval(x - r, y - r, r * 2, r * 2);
 			g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
 
-			/*
-			 * radius = radius - 1;// - c.thickness + 1;
-			 * g2d.setColor(c.fillColor); g2d.fillOval(x - radius, y - radius,
-			 * radius * 2, radius * 2);
-			 */
-		}
-		else
-		{
-			radius += 3;
-			g2d.setColor(Color.RED);
-			g2d.setStroke(new BasicStroke(c.thickness));
-			g2d.fillOval(x - r, y - r, r * 2, r * 2);
-			g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
-			/*
-			 * radius = radius - 1;// - c.thickness + 1;
-			 * g2d.setColor(c.fillColor); g2d.fillOval(x - radius, y - radius,
-			 * radius * 2, radius * 2);
-			 */
+			radius = radius - c.thickness / 2;
+
+			g2d.setColor(c.fillColor);
+			g2d.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+
+			g2d.setColor(brushColor);
 		}
 	}
 
@@ -409,10 +548,11 @@ class Board extends JPanel implements MouseInputListener
 		g2d.setStroke(new BasicStroke(brushSize));
 		g2d.fillOval(x - r, y - r, r * 2, r * 2);
 		g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
-		/*
-		 * g2d.setColor(fillColor); radius = radius - 1; g2d.fillOval(x -
-		 * radius, y - radius, radius * 2, radius * 2);
-		 */
+
+		g2d.setColor(fillColor);
+		radius = radius - brushSize / 2;
+		g2d.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+
 	}
 
 	public void drawRect(int sX2, int sY2, int currX2, int currY2, Graphics g)
@@ -430,13 +570,14 @@ class Board extends JPanel implements MouseInputListener
 		int width = (int) (-sX2 + currX2 + ((thickness % 2 == 0) ? 0.5 * thickness : 0.5 * (thickness + 1)));
 		int height = (int) (-sY2 + currY2 + ((thickness % 2 == 0) ? 0.5 * thickness : 0.5 * (thickness + 1)));
 		if (width < 0 && height > 0)
-			return new Rectangle(new Vertex(currX2, sY2), -width, height, brushSize, brushColor);
+			return new Rectangle(new Vertex(currX2, sY2), -width, height, brushSize, brushColor, fillColor);
 		else if (width > 0 && height < 0)
-			return new Rectangle(new Vertex(sX2, currY2), width, -height, brushSize, brushColor);
+			return new Rectangle(new Vertex(sX2, currY2), width, -height, brushSize, brushColor, fillColor);
 		else if (width < 0 && height < 0)
-			return new Rectangle(new Vertex(currX2, currY2), -width, -height, brushSize, brushColor);
+			return new Rectangle(new Vertex(currX2, currY2), -width, -height, brushSize, brushColor,
+					fillColor);
 		else
-			return new Rectangle(new Vertex(sX2, sY2), width, height, brushSize, brushColor);
+			return new Rectangle(new Vertex(sX2, sY2), width, height, brushSize, brushColor, fillColor);
 	}
 
 	private void drawRectangle(Rectangle r1, Graphics2D g2d)
@@ -446,24 +587,25 @@ class Board extends JPanel implements MouseInputListener
 			g2d.setStroke(new BasicStroke(r1.thickness));
 			g2d.setColor(r1.brushColor);
 			g2d.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
-			/*
-			 * g2d.setColor(r1.fillColor); g2d.fillRect(r1.origin.x + (int) (0.5
-			 * * r1.thickness), r1.origin.y + (int) (0.5 * r1.thickness),
-			 * r1.width - (int) (r1.thickness), r1.height - (int)
-			 * (r1.thickness));
-			 */
+			g2d.setColor(r1.fillColor);
+			if (r1.thickness % 2 != 0)
+				g2d.fillRect(r1.origin.x + (int) (0.5 * (r1.thickness + 1)),
+						r1.origin.y + (int) (0.5 * (r1.thickness + 1)), r1.width - (int) (r1.thickness),
+						r1.height - (int) (r1.thickness));
+			else
+				g2d.fillRect(r1.origin.x + (int) (0.5 * r1.thickness),
+						r1.origin.y + (int) (0.5 * r1.thickness), r1.width - (int) (r1.thickness),
+						r1.height - (int) (r1.thickness));
 		}
 		else
 		{
 			g2d.setStroke(new BasicStroke(r1.thickness + 3));
-			g2d.setColor(Color.RED);
+			g2d.setColor(r1.brushColor);
 			g2d.drawRect(r1.origin.x, r1.origin.y, r1.width, r1.height);
-			/*
-			 * g2d.setColor(r1.fillColor); g2d.fillRect(r1.origin.x + (int) (0.5
-			 * * r1.thickness), r1.origin.y + (int) (0.5 * r1.thickness),
-			 * r1.width - (int) (r1.thickness), r1.height - (int)
-			 * (r1.thickness));
-			 */
+			g2d.setColor(r1.fillColor);
+			g2d.fillRect(r1.origin.x + (int) (0.5 * r1.thickness), r1.origin.y + (int) (0.5 * r1.thickness),
+					r1.width - (int) (r1.thickness), r1.height - (int) (r1.thickness));
+
 		}
 		g2d.setColor(brushColor);
 	}
@@ -472,7 +614,7 @@ class Board extends JPanel implements MouseInputListener
 	{
 		if (p1 != editor.data.tempPolygon)
 		{
-			g2d.setStroke(new BasicStroke(p1.thickness));
+			g2d.setStroke(new BasicStroke(p1.thickness + 3));
 			g2d.setColor(p1.brushColor);
 			g2d.drawPolygon(p1.getXPoints(), p1.getYPoints(), p1.vertices.size());
 			g2d.setColor(p1.fillColor);
@@ -480,14 +622,13 @@ class Board extends JPanel implements MouseInputListener
 		}
 		else
 		{
-			g2d.setStroke(new BasicStroke(p1.thickness + 3));
-			g2d.setColor(Color.RED);
+			g2d.setStroke(new BasicStroke(p1.thickness + 6));
+			g2d.setColor(p1.brushColor);
 			g2d.drawPolygon(p1.getXPoints(), p1.getYPoints(), p1.vertices.size());
 			g2d.setColor(p1.fillColor);
 			g2d.fillPolygon(p1.getXPoints(), p1.getYPoints(), p1.vertices.size());
 		}
 		g2d.setColor(brushColor);
-
 	}
 
 	private void drawEdge(Edge e, Graphics2D g2d)
@@ -501,7 +642,7 @@ class Board extends JPanel implements MouseInputListener
 		else
 		{
 			g2d.setStroke(new BasicStroke(e.thickness + 3));
-			g2d.setColor(Color.RED);
+			g2d.setColor(e.color);
 			g2d.drawLine(e.u.x, e.u.y, e.v.x, e.v.y);
 		}
 		g2d.setColor(brushColor);
@@ -509,7 +650,7 @@ class Board extends JPanel implements MouseInputListener
 
 	private void drawNode(Node n, Graphics2D g2d)
 	{
-		int r = 15;
+		int r = 10;
 		if (n != editor.data.tempNode)
 		{
 			g2d.setColor(n.brushColor);
@@ -517,10 +658,10 @@ class Board extends JPanel implements MouseInputListener
 		}
 		else
 		{
-			r += 3;
+			r += 5;
 			g2d.setColor(n.brushColor);
 			g2d.fillOval(n.x - r, n.y - r, r * 2, r * 2);
-			r -= 3;
+			r -= 5;
 		}
 		g2d.setColor(brushColor);
 	}

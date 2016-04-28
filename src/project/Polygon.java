@@ -6,6 +6,46 @@ import java.awt.Color;
 public class Polygon
 {
 	ArrayList<Vertex> vertices;
+	public ArrayList<Vertex> getVertices()
+	{
+		return vertices;
+	}
+
+	public void setVertices(ArrayList<Vertex> vertices)
+	{
+		this.vertices = vertices;
+	}
+
+	public int getThickness()
+	{
+		return thickness;
+	}
+
+	public void setThickness(int thickness)
+	{
+		this.thickness = thickness;
+	}
+
+	public Color getBrushColor()
+	{
+		return brushColor;
+	}
+
+	public void setBrushColor(Color brushColor)
+	{
+		this.brushColor = brushColor;
+	}
+
+	public Color getFillColor()
+	{
+		return fillColor;
+	}
+
+	public void setFillColor(Color fillColor)
+	{
+		this.fillColor = fillColor;
+	}
+
 	int thickness;
 	Color brushColor;
 	Color fillColor;
@@ -46,37 +86,6 @@ public class Polygon
 		for (Vertex v : this.vertices)
 			yPoints[i++] = v.y;
 		return yPoints;
-	}
-
-	@Override
-	public String toString()
-	{
-		StringBuffer sb = new StringBuffer();
-		float brush[] = getComponents(brushColor);
-		float fill[] = getComponents(fillColor);
-		int n = vertices.size();
-		sb.append(brush[0]);
-		sb.append(" ");
-		sb.append(brush[1]);
-		sb.append(" ");
-		sb.append(brush[2]);
-		sb.append(" ");
-		sb.append(fill[0]);
-		sb.append(" ");
-		sb.append(fill[1]);
-		sb.append(" ");
-		sb.append(fill[2]);
-		sb.append(" ");
-		sb.append(thickness);
-		sb.append(" ");
-		sb.append(n);
-		sb.append(" ");
-		sb.append(vertices.get(0));
-		sb.append(" ");
-		for (int i = 0; i < n - 1; i++)
-			sb.append(vertices.get(i) + " " + vertices.get(i + 1) + " ");
-		sb.append(vertices.get(n - 1) + " " + vertices.get(0));
-		return sb.toString();
 	}
 
 	@Override
@@ -143,14 +152,38 @@ public class Polygon
 		int y = y1 - y2;
 		return x * x + y * y;
 	}
-
-	private float[] getComponents(Color color)
+	
+	@Override
+	public String toString()
 	{
-		float[] colors = new float[3];
-		float MAX_COLOR = 255f;
-		colors[0] = ((float) color.getRed()) / MAX_COLOR;
-		colors[1] = ((float) color.getGreen()) / MAX_COLOR;
-		colors[2] = ((float) color.getBlue()) / MAX_COLOR;
-		return colors;
+		StringBuffer sb = new StringBuffer();
+		sb.append(vertices.size());
+		sb.append(" ");
+		for(Vertex v : vertices)
+		{
+			sb.append(v);
+			sb.append(" ");
+		}
+		sb.append(thickness);
+		sb.append(" ");
+		sb.append(toString(brushColor));
+		sb.append(" ");
+		sb.append(toString(fillColor));
+		return sb.toString();
+	}
+	private String toString(Color color)
+	{
+		int[] comp = getComponents(color);
+		return comp[0] + " " + comp[1] + " " + comp[2] + " " + comp[3];
+	}
+	
+	private int[] getComponents(Color color)
+	{
+		int[] comp = new int[4];
+		comp[0] = color.getRed();
+		comp[1] = color.getGreen();
+		comp[2] = color.getBlue();
+		comp[3] = color.getAlpha();
+		return comp;
 	}
 }

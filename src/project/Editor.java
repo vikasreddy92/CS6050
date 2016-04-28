@@ -1,9 +1,12 @@
 package project;
 
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 public class Editor implements Runnable {
 	public Window window;
+	public static int board_height;
+	public static int board_width;
 	Data data;
 
 	Editor() {
@@ -29,8 +32,12 @@ public class Editor implements Runnable {
 	}
 
 	public void run() {
+		window.setExtendedState(JFrame.MAXIMIZED_BOTH); 
 		window.pack();
 		window.setVisible(true);
+		board_height = window.board.getHeight();
+		board_width = window.board.getWidth();
+//		System.out.println("Editor.java H:" + board_height + ", W: " + board_width);
 	}
 
 	public static void main(String[] args) {
